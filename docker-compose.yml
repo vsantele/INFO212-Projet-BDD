@@ -1,0 +1,20 @@
+services:
+  mysql-db:
+    image: mysql:latest
+    ports:
+      - 3300:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysqlPassword
+      - MYSQL_USER=mysqlUser
+      - MYSQL_PASSWORD=mysqlPassword
+      - MYSQL_DATABASE=CLICOM
+    volumes:
+      - "./initDB:/docker-entrypoint-initdb.d"
+  adminer:
+    image: adminer:latest
+    ports:
+      - 8000:8080
+    depends_on:
+      - mysql-db
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql-db
