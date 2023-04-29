@@ -6,8 +6,8 @@
 
 ## DB
 
-- [ ] Générer des données factices pour la DB
-- [ ] Exporter ces données dans un fichier SQL
+- [x] Générer des données factices pour la DB
+- [x] Exporter ces données dans un fichier SQL
 - [ ] Créer la vue Facture
 - [ ] Créer les triggers pour les commandes
 - [ ] Voir s'il faut d'autres triggers?
