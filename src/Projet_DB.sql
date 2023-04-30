@@ -15,8 +15,12 @@
 use CLICOM;
 
 
--- DBSpace Section
--- _______________
+-- Drop Tables
+-- ___________
+
+drop table if exists `ADRESSE`, `ALBUM`, `APPARTIENT`, `ARTISTE`, `CLIENT`, `COMMANDE`, 
+`CONTENU`, `DISQUE`, `DISQUEALBUM`, `DISQUESINGLE`, `EMPLOYE`, `FOURNISSEUR`, `GERANT`, 
+`INTERPRETE`, `MAGASIN`, `PERSONNE`, `PRODUCTEUR`, `PRODUIT`, `SON`, `STOCK`, `VENTE`;
 
 
 -- Tables Section
@@ -101,14 +105,14 @@ create table FOURNISSEUR (
 
 create table COMMANDE (
      IdCommande int not null AUTO_INCREMENT,
-     Date_livraison date,
-     Date_Commande date not null,
+     Datelivraison date,
+     DateCommande date not null,
      Quantite numeric(10) not null,
      Fournisseur char(30) not null,
      constraint ID_COMMANDE_ID primary key (IdCommande),
      foreign key (Fournisseur) references FOURNISSEUR(IdFournisseur) on delete no action on update cascade,
      check (Quantite >= 0),
-     check (Date_Commande < Date_livraison));
+     check (DateCommande < Datelivraison));
 
 create table DISQUE (
      IdDisque char(30) not null,
@@ -209,41 +213,85 @@ create table VENTE (
 
 drop trigger if exists TRG_ALBUM_INSERT_ISA_DISQUE;
 delimiter //
-
 create trigger TRG_ALBUM_INSERT_ISA_DISQUE
 before insert on DISQUEALBUM for each row
 BEGIN
 	declare I int;
-    declare msg varchar(128);
-    select COUNT(*) into I from DISQUESINGLE where Disque = new.Disque;
+     declare msg varchar(128);
+     select COUNT(*) into I from DISQUESINGLE where Disque = new.Disque;
     
-	if I = 1 then
+     if I = 1 then
 		set msg = 'Error insert on DISQUEALBUM';
-        signal sqlstate '45000' set message_text = msg;
-    end if;
+          signal sqlstate '45000' set message_text = msg;
+     end if;
 END//
 delimiter ;
 
 
 drop trigger if exists TRG_SINGLE_INSERT_ISA_DISQUE;
 delimiter //
-
 create trigger TRG_SINGLE_INSERT_ISA_DISQUE
 before insert on DISQUESINGLE for each row
 BEGIN
-	declare I int;
-    declare msg varchar(128);
-    select COUNT(*) into I from DISQUEALBUM where Disque = new.Disque;
+     declare I int;
+     declare msg varchar(128);
+     select COUNT(*) into I from DISQUEALBUM where Disque = new.Disque;
     
 	if I = 1 then
-		set msg = 'Error insert on DISQUESINGLE';
-        signal sqlstate '45000' set message_text = msg;
-    end if;  
+	     set msg = 'Error insert on DISQUESINGLE';
+          signal sqlstate '45000' set message_text = msg;
+     end if;  
 END//
 delimiter ;
 
 drop trigger if exists TRG_INSERT_STOCK;
 delimiter //
+drop trigger if exists TRG_UPDATE_STOCK;
+delimiter //
+create trigger TRG_UPDATE_STOCK
+before update on STOCK for each row
+begin
+	declare I integer;
+	if new.Quantite < 2 then
+		select COUNT(*) into I from CONTENU where Disque = new.Disque;
+        if I = 0 then
+			insert into COMMANDE(DateCommande, Quantite, Fournisseur) values(curdate(), 10, 'FOUDB01');
+			insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
+        end if;
+        set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;        
+    end if;
+end//
+delimiter ;
+
+drop trigger if exists TRG_INSERT_STOCK;
+delimiter //
+create trigger TRG_INSERT_STOCK
+before insert on STOCK for each row
+begin
+	declare I integer;
+	if new.Quantite < 2 then
+		select COUNT(*) into I from CONTENU where Disque = new.Disque;
+        if I = 0 then
+			insert into COMMANDE(DateCommande, Quantite, Fournisseur) values(curdate(), 10, 'FOUDB01');
+			insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
+        end if;
+        set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;        
+    end if;
+end//
+delimiter ;
+
+
+-- View Section
+-- ____________
+
+drop view if exists FACTURE;
+create view FACTURE as
+select v.Numero, p.Nom, p.Prenom, d.IdDisque, v.DateAchat, v.Quantite, 
+       (d.PrixVente * v.Quantite) AS PrixTotal
+from VENTE v
+inner join CLIENT c on v.Client = c.NumClient
+inner join DISQUE d on v.Disque = d.IdDisque
+inner join PERSONNE p on c.Personne = p.IdPersonne;
 
 
 -- Insert Section
@@ -370,3 +418,5 @@ insert into STOCK values('DISDB06', 123456, 10);
 insert into VENTE values(1, 2, '2023-02-10', 'DISDB01', 1, 4);
 insert into VENTE values(2, 4, '2023-03-20', 'DISDB02', 2, 5);
 insert into VENTE values(3, 1, '2023-04-18', 'DISDB04', 3, 6);
+
+COMMIT;
