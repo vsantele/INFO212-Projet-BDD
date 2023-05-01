@@ -114,11 +114,27 @@ create table COMMANDE (
      check (Quantite >= 0),
      check (DateCommande < Datelivraison));
 
+create table DISQUEALBUM (
+     Disque char(30) not null,
+     Album numeric(10) not null,
+     constraint ID_DISQU_DISQU_1_ID primary key (Disque),
+     constraint SID_DISQU_ALBUM_ID unique (Album),
+     foreign key (Album) references ALBUM(NumAlbum) on delete no action on update cascade);
+
+create table DISQUESINGLE (
+     Disque char(30) not null,
+     Son numeric(10) not null,
+     constraint ID_DISQU_DISQU_ID primary key (Disque),
+     constraint SID_DISQU_SON_ID unique (Son),
+     foreign key (Son) references SON(NumSon) on delete no action on update cascade);
+
 create table DISQUE (
      IdDisque char(30) not null,
      PrixVente numeric(10,4) not null,
      PrixAchat numeric(10,4) not null,
      Fournisseur char(30) not null,
+     DisqueAlbum char(30),
+     DisqueSingle char(30),
      constraint ID_DISQUE_ID primary key (IdDisque),
      foreign key (Fournisseur) references FOURNISSEUR(IdFournisseur) on delete no action on update cascade,
      check (PrixAchat > 0),
@@ -130,22 +146,6 @@ create table CONTENU (
      constraint ID_Contenu_ID primary key (Disque, Commande),
      foreign key (Disque) references DISQUE(IdDisque) on delete no action on update cascade,
      foreign key (Commande) references COMMANDE(IdCommande) on delete no action on update cascade);
-
-create table DISQUEALBUM (
-     Disque char(30) not null,
-     Album numeric(10) not null,
-     constraint ID_DISQU_DISQU_1_ID primary key (Disque),
-     constraint SID_DISQU_ALBUM_ID unique (Album),
-     foreign key (Disque) references DISQUE(IdDisque) on delete no action on update cascade,
-     foreign key (Album) references ALBUM(NumAlbum) on delete no action on update cascade);
-
-create table DISQUESINGLE (
-     Disque char(30) not null,
-     Son numeric(10) not null,
-     constraint ID_DISQU_DISQU_ID primary key (Disque),
-     constraint SID_DISQU_SON_ID unique (Son),
-     foreign key (Disque) references DISQUE(IdDisque) on delete no action on update cascade,
-     foreign key (Son) references SON(NumSon) on delete no action on update cascade);
 
 create table EMPLOYE (
      Personne numeric(6) not null,
@@ -211,20 +211,41 @@ create table VENTE (
 -- Constraints Section
 -- ___________________ 
 
+drop trigger if exists TRG_DISQUE_INSERT_SURTYPE;
+delimiter //
+create trigger TRG_DISQUE_INSERT_SURTYPE
+before insert on DISQUE for each row
+begin
+     set new.DisqueAlbum = null, new.DisqueSingle = null;
+end//
+delimiter ;
+
+-- revoke update (DisqueSingle, DisqueSingle) on DISQUE from public;
+-- revoke update (Disque) on DISQUEALBUM from public;
+-- revoke update (Disque) on DISQUESINGLE from public;
+
+alter table DISQUEALBUM add constraint FK_ALBUM_DISQUE
+foreign key (Disque) references DISQUE(IdDisque) on delete cascade on update cascade;
+
+alter table DISQUESINGLE add constraint FK_SINGLE_DISQUE
+foreign key (Disque) references DISQUE(IdDisque) on delete cascade on update cascade;
+
 drop trigger if exists TRG_ALBUM_INSERT_ISA_DISQUE;
 delimiter //
 create trigger TRG_ALBUM_INSERT_ISA_DISQUE
 before insert on DISQUEALBUM for each row
-BEGIN
+begin
 	declare I int;
      declare msg varchar(128);
-     select COUNT(*) into I from DISQUESINGLE where Disque = new.Disque;
-    
+     select COUNT(*) into I from DISQUE where IdDisque = new.Disque
+     and (DisqueAlbum is not null or DisqueSingle is not null);
      if I = 1 then
 		set msg = 'Error insert on DISQUEALBUM';
           signal sqlstate '45000' set message_text = msg;
      end if;
-END//
+     update DISQUE set DisqueAlbum = '*'
+     where IdDisque = new.Disque;
+end//
 delimiter ;
 
 
@@ -232,16 +253,38 @@ drop trigger if exists TRG_SINGLE_INSERT_ISA_DISQUE;
 delimiter //
 create trigger TRG_SINGLE_INSERT_ISA_DISQUE
 before insert on DISQUESINGLE for each row
-BEGIN
+begin
      declare I int;
      declare msg varchar(128);
-     select COUNT(*) into I from DISQUEALBUM where Disque = new.Disque;
-    
+     select COUNT(*) into I from DISQUE where IdDisque = new.Disque
+     and (DisqueAlbum is not null or DisqueSingle is not null);
 	if I = 1 then
 	     set msg = 'Error insert on DISQUESINGLE';
           signal sqlstate '45000' set message_text = msg;
-     end if;  
-END//
+     end if;
+     update DISQUE set DisqueSingle = '*'
+     where IdDisque = new.Disque;
+end//
+delimiter ;
+
+drop trigger if exists TRG_ALBUM_DELETE_ISA_DIS;
+delimiter //
+create trigger TRG_ALBUM_DELETE_ISA_DIS
+after delete on DISQUEALBUM for each row
+begin
+     update DISQUE set DisqueAlbum = null
+     where IdDisque = old.Disque;
+end//
+delimiter ;
+
+drop trigger if exists TRG_SINGLE_DELETE_ISA_DIS;
+delimiter //
+create trigger TRG_SINGLE_DELETE_ISA_DIS
+after delete on DISQUESINGLE for each row
+begin
+     update DISQUE set DisqueSingle = null
+     where IdDisque = old.Disque;
+end//
 delimiter ;
 
 drop trigger if exists TRG_INSERT_STOCK;
@@ -357,12 +400,13 @@ insert into COMMANDE values(3, '2023-03-01', '2022-12-03', 4, 'FOUDB01');
 insert into COMMANDE values(4, '2023-04-01', '2022-11-04', 5, 'FOUDB01');
 insert into COMMANDE values(5, '2023-05-01', '2022-11-05', 8, 'FOUDB01');
 
-insert into DISQUE values('DISDB01', 10.5, 8.3, 'FOUDB01');
-insert into DISQUE values('DISDB02', 11.5, 9.3, 'FOUDB01');
-insert into DISQUE values('DISDB03', 9.5, 10, 'FOUDB01');
-insert into DISQUE values('DISDB04', 12, 10, 'FOUDB01');
-insert into DISQUE values('DISDB05', 15, 13.7, 'FOUDB01');
-insert into DISQUE values('DISDB06', 9, 8.3, 'FOUDB01');
+insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB01', 10.5, 8.3, 'FOUDB01');
+insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB02', 11.5, 9.3, 'FOUDB01');
+insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB03', 9.5, 10, 'FOUDB01');
+insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB04', 12, 10, 'FOUDB01');
+insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB05', 15, 13.7, 'FOUDB01');
+insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB06', 9, 8.3, 'FOUDB01');
+insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB07', 10, 8.3, 'FOUDB01');
 
 insert into DISQUESINGLE values('DISDB01', 1);
 insert into DISQUESINGLE values('DISDB02', 2);
@@ -419,4 +463,4 @@ insert into VENTE values(1, 2, '2023-02-10', 'DISDB01', 1, 4);
 insert into VENTE values(2, 4, '2023-03-20', 'DISDB02', 2, 5);
 insert into VENTE values(3, 1, '2023-04-18', 'DISDB04', 3, 6);
 
-COMMIT;
+commit;
