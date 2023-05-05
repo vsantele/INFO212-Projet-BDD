@@ -27,7 +27,7 @@ drop table if exists `ADRESSE`, `ALBUM`, `APPARTIENT`, `ARTISTE`, `CLIENT`, `COM
 -- ______________ 
 
 create table ADRESSE (
-     IdAdresse char(30) not null,
+     IdAdresse int not null auto_increment,
      Rue char(30) not null,
      CodePostal numeric(5) not null,
      Ville char(30) not null,
@@ -38,7 +38,7 @@ create table MAGASIN (
      IdMagasin numeric(6) not null,
      Nom char(30) not null,
      Telephone numeric(10) not null,
-     Adresse char(30),
+     Adresse int,
      constraint ID_MAGASIN_ID primary key (IdMagasin),
      foreign key (Adresse) references ADRESSE(IdAdresse) on delete no action on update cascade);
 
@@ -83,17 +83,17 @@ create table APPARTIENT (
      foreign key (Album) references ALBUM(NumAlbum) on delete no action on update cascade);
 
 create table PERSONNE (
-     IdPersonne numeric(6) not null,
+     IdPersonne int not null auto_increment,
      Nom char(30) not null,
      Prenom char(30) not null,
      Telephone numeric(10) not null,
-     Adresse char(30),
+     Adresse int not null,
      constraint ID_PERSONNE_ID primary key (IdPersonne),
      foreign key (Adresse) references ADRESSE(IdAdresse) on delete no action on update cascade);
 
 create table CLIENT (
-     NumClient numeric(10) not null,
-     Personne numeric(6) not null,
+     NumClient int not null auto_increment,
+     Personne int not null,
      constraint ID_CLIENT_ID primary key (NumClient),
      constraint SID_CLIEN_PERSO_ID unique (Personne),
      foreign key (Personne) references PERSONNE(IdPersonne) on delete no action on update cascade);
@@ -104,7 +104,7 @@ create table FOURNISSEUR (
      constraint ID_FOURNISSEUR_ID primary key (IdFournisseur));
 
 create table COMMANDE (
-     IdCommande int not null AUTO_INCREMENT,
+     IdCommande int not null auto_increment,
      Datelivraison date,
      DateCommande date not null,
      Quantite numeric(10) not null,
@@ -148,7 +148,7 @@ create table CONTENU (
      foreign key (Commande) references COMMANDE(IdCommande) on delete no action on update cascade);
 
 create table EMPLOYE (
-     Personne numeric(6) not null,
+     Personne int not null,
      Email char(50) not null,
      Salaire numeric(10,4) not null,
      Magasin numeric(6) not null,
@@ -158,7 +158,7 @@ create table EMPLOYE (
      check (Salaire > 0));
 
 create table GERANT (
-     Employe numeric(6) not null,
+     Employe int not null,
      Magasin numeric(6) not null,
      VoitureSociete char not null,
      constraint ID_GERANT_ID primary key (Employe),
@@ -195,12 +195,12 @@ create table STOCK (
      check (Quantite >= 0));
 
 create table VENTE (
-     Numero numeric(10) not null,
+     Numero int not null auto_increment,
      Quantite numeric(10) not null,
      DateAchat date not null,
      Disque char(30) not null,
-     Client numeric(10) not null,
-     Employe numeric(6) not null,
+     Client int,
+     Employe int not null,
      constraint ID_VENTE_ID primary key (Numero),
      foreign key (Disque) references DISQUE(IdDisque) on delete no action on update cascade,
      foreign key (Client) references CLIENT(NumClient) on delete no action on update cascade,
@@ -340,15 +340,15 @@ inner join PERSONNE p on c.Personne = p.IdPersonne;
 -- Insert Section
 -- ______________
 
-insert into ADRESSE values('ADRDB01','Rue des Cerfs', 1000, 'Bruxelles', 'Belgique');
-insert into ADRESSE values('ADRDB02','Boulevard des Rois', 1050, 'Ixelles', 'Belgique');
-insert into ADRESSE values('ADRDB03','Chemin des Fêtes', 1070, 'Anderlecht', 'Belgique');
-insert into ADRESSE values('ADRDB04','Rue de la Colline', 4000, 'Liège', 'Belgique');
-insert into ADRESSE values('ADRDB05','Rue de Victoire', 5020, 'Malonne', 'Belgique');
-insert into ADRESSE values('ADRDB06','Rue des Rosiers', 7500, 'Tournai', 'Belgique');
-insert into ADRESSE values('ADRDB07','Rue du Musée', 1410, 'Waterloo', 'Belgique');
+insert into ADRESSE values(1 ,'Rue des Cerfs', 1000, 'Bruxelles', 'Belgique');
+insert into ADRESSE values(2 ,'Boulevard des Rois', 1050, 'Ixelles', 'Belgique');
+insert into ADRESSE values(3 ,'Chemin des Fêtes', 1070, 'Anderlecht', 'Belgique');
+insert into ADRESSE values(4 ,'Rue de la Colline', 4000, 'Liège', 'Belgique');
+insert into ADRESSE values(5 ,'Rue de Victoire', 5020, 'Malonne', 'Belgique');
+insert into ADRESSE values(6 ,'Rue des Rosiers', 7500, 'Tournai', 'Belgique');
+insert into ADRESSE values(7 ,'Rue du Musée', 1410, 'Waterloo', 'Belgique');
 
-insert into MAGASIN values(123456, 'Rockamusic', 087148634, 'ADRDB01');
+insert into MAGASIN values(123456, 'Rockamusic', 087148634, 1);
 
 insert into ARTISTE values('ARTDB01', 'Bert East', 0, null);
 insert into ARTISTE values('ARTDB02', 'Whistle', 0, null);
@@ -380,12 +380,12 @@ insert into APPARTIENT values(3,7);
 insert into APPARTIENT values(3,8);
 insert into APPARTIENT values(3,9);
 
-insert into PERSONNE values(1, 'Max', 'Marchal', 0475673956, 'ADRDB02');
-insert into PERSONNE values(2, 'Remi', 'Gérald', 0477123456, 'ADRDB03');
-insert into PERSONNE values(3, 'Edouard', 'Dumont', 0489126745, 'ADRDB04');
-insert into PERSONNE values(4, 'Norbert', 'Geiger', 0472561937, 'ADRDB05');
-insert into PERSONNE values(5, 'Édouard', 'Lajoie', 0478143956, 'ADRDB06');
-insert into PERSONNE values(6, 'Thibaud', 'Beaulieu', 0470183645, 'ADRDB07');
+insert into PERSONNE values(1, 'Marchal', 'Max', 0475673956, 2);
+insert into PERSONNE values(2, 'Gérald', 'Remi', 0477123456, 3);
+insert into PERSONNE values(3, 'Dumont', 'Edouard', 0489126745, 4);
+insert into PERSONNE values(4, 'Geiger', 'Norbert', 0472561937, 5);
+insert into PERSONNE values(5, 'Lajoie', 'Édouard', 0478143956, 6);
+insert into PERSONNE values(6, 'Beaulieu', 'Thibaud', 0470183645, 7);
 
 insert into CLIENT values(1, 1);
 insert into CLIENT values(2, 2);
