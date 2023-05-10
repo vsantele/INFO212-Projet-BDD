@@ -322,30 +322,29 @@ begin
     end if;
 end//
 delimiter ;
-DROP TRIGGER IF EXISTS TRG_DISQUE_UPDATE_ALBUM_SINGLE;
+drop trigger if exists trg_disque_update_album_single;
 
 delimiter //
 
-CREATE TRIGGER TRG_DISQUE_UPDATE_ALBUM_SINGLE
-BEFORE UPDATE ON DISQUE
-FOR EACH ROW
-BEGIN
-    DECLARE album INT;
-    DECLARE single INT;
+create trigger trg_disque_update_album_single
+before update on disque
+for each row
+begin
+declare album int;
+declare single int;
+select count(*) into album from disque where iddisque <> new.iddisque and disquealbum = new.disquealbum;
+select count(*) into single from disque where iddisque <> new.iddisque and disquesingle = new.disquesingle;
 
-    SELECT COUNT(*) INTO album FROM DISQUE WHERE IdDisque <> NEW.IdDisque AND DisqueAlbum = NEW.DisqueAlbum;
-    SELECT COUNT(*) INTO single FROM DISQUE WHERE IdDisque <> NEW.IdDisque AND DisqueSingle = NEW.DisqueSingle;
+if album > 0 and new.disquealbum is not null then
+    signal sqlstate '45000' set message_text = 'disquealbum and disquesingle fields are mutually exclusive';
+end if;
 
-    IF album > 0 AND NEW.DisqueAlbum IS NOT NULL THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'DisqueAlbum and DisqueSingle fields are mutually exclusive';
-    END IF;
+if single > 0 and new.disquesingle is not null then
+    signal sqlstate '45000' set message_text = 'disquealbum and disquesingle fields are mutually exclusive';
+end if;
+end//
 
-    IF single > 0 AND NEW.DisqueSingle IS NOT NULL THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'DisqueAlbum and DisqueSingle fields are mutually exclusive';
-    END IF;
-END//
-
-DELIMITER ;
+delimiter;
 
 
 
