@@ -336,11 +336,28 @@ select count(*) into album from disque where iddisque <> new.iddisque and disque
 select count(*) into single from disque where iddisque <> new.iddisque and disquesingle = new.disquesingle;
 
 if album > 0 and new.disquealbum is not null then
-    signal sqlstate '45000' set message_text = 'disquealbum and disquesingle fields are mutually exclusive';
+    signal sqlstate '45000' set message_text = 'Les champs "Album" et "Single" du disque sont mutuellement exclusifs. Veuillez choisir l'un ou l'autre, mais pas les deux.';
 end if;
 
 if single > 0 and new.disquesingle is not null then
-    signal sqlstate '45000' set message_text = 'disquealbum and disquesingle fields are mutually exclusive';
+    signal sqlstate '45000' set message_text = 'Les champs "Album" et "Single" du disque sont mutuellement exclusifs. Veuillez choisir l'un ou l'autre, mais pas les deux.';
+end if;
+end//
+
+delimiter;
+drop trigger if exists trg_magasin_delete_with_stock;
+
+delimiter //
+
+create trigger trg_magasin_delete_with_stock
+before delete on magasin
+for each row
+begin
+declare stock int;
+select count(*) into stock from stock where idmagasin = old.idmagasin;
+
+if stock > 0 then
+    signal sqlstate '45000' set message_text = 'Un Magasin avec stock ne peut être supprimer';
 end if;
 end//
 
