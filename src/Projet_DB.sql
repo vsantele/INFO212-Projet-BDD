@@ -322,6 +322,31 @@ begin
     end if;
 end//
 delimiter ;
+DROP TRIGGER IF EXISTS TRG_DISQUE_UPDATE_ALBUM_SINGLE;
+
+delimiter //
+
+CREATE TRIGGER TRG_DISQUE_UPDATE_ALBUM_SINGLE
+BEFORE UPDATE ON DISQUE
+FOR EACH ROW
+BEGIN
+    DECLARE album INT;
+    DECLARE single INT;
+
+    SELECT COUNT(*) INTO album FROM DISQUE WHERE IdDisque <> NEW.IdDisque AND DisqueAlbum = NEW.DisqueAlbum;
+    SELECT COUNT(*) INTO single FROM DISQUE WHERE IdDisque <> NEW.IdDisque AND DisqueSingle = NEW.DisqueSingle;
+
+    IF album > 0 AND NEW.DisqueAlbum IS NOT NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'DisqueAlbum and DisqueSingle fields are mutually exclusive';
+    END IF;
+
+    IF single > 0 AND NEW.DisqueSingle IS NOT NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'DisqueAlbum and DisqueSingle fields are mutually exclusive';
+    END IF;
+END//
+
+DELIMITER ;
+
 
 
 -- View Section
