@@ -29,6 +29,9 @@ def main():
                             print("Supprimer Client")
                         elif client_choice == utils.Client_choices.ADD_BUY.value:
                             print("Effectuer un achat")
+                        elif client_choice == utils.Client_choices.SEE_INVOICE.value:
+                            date = input("Entrez la date de la facture (AAAA-MM-JJ) : ")
+                            see_invoice(db, num_client, date)
                         else:
                             print("Afficher Facture")
                         utils.print_client_menu()
