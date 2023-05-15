@@ -27,6 +27,6 @@
 - [ ] Affichage des données
   - [x] Info sur le client en cours
   - [ ]
-- [ ] Permettre suppression d'un client
-- [ ] Permettre au client d'accéder à ses achats
-- [ ] Afficher une facture d'un client pour un jour donné avec la vue facture.
+- [ ] Permettre suppression d'un client #wilfrid
+- [ ] Permettre au client d'accéder à ses achats #wilfrid
+- [ ] Afficher une facture d'un client pour un jour donné avec la vue facture. #wilfrid
