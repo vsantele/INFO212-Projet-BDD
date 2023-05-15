@@ -15,6 +15,8 @@ def main():
         while user_choice != utils.User_choices.QUIT.value:
             if user_choice == utils.User_choices.ADD_CLI.value:
                 add_client(db)
+            elif user_choice == utils.User_choices.DELETE_CLI.value:
+                delete_client(db, num_client)
             elif user_choice == utils.User_choices.CLIENT.value:
                 connected, num_client = connect_client(db)
                 if connected:
@@ -113,3 +115,13 @@ def see_invoice(db, num_client, date):
         for row in db.cursor:
             data.append([str(row[0]), row[1], row[2], str(row[3]), str(row[4]), str(row[5]), str(row[6])])
         utils.print_data(titles, data)
+        
+        
+        
+ def delete_client(db, num_client):
+    try:
+        db.cursor.execute("DELETE * FROM CLIENT WHERE NumClient = %s;", [num_client])
+        db.connection.commit()
+        print("Client supprimé avec succès.")
+    except:
+        print("Erreur lors de la suppression du client.")
