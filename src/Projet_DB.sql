@@ -370,7 +370,7 @@ delimiter;
 
 drop view if exists FACTURE;
 create view FACTURE as
-select v.Numero, p.Nom, p.Prenom, d.IdDisque, v.DateAchat, v.Quantite, 
+select v.Numero, p.Nom, c.NumClient, p.Prenom, d.IdDisque, v.DateAchat, v.Quantite, 
        (d.PrixVente * v.Quantite) AS PrixTotal
 from VENTE v
 inner join CLIENT c on v.Client = c.NumClient
