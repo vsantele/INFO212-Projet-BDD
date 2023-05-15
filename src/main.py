@@ -34,6 +34,8 @@ def main():
                         elif client_choice == utils.Client_choices.SEE_INVOICE.value:
                             date = input("Entrez la date de la facture (AAAA-MM-JJ) : ")
                             see_invoice(db, num_client, date)
+                        elif client_choice == utils.Client_choices.SEE_PURCHASES.value:
+                            see_purchases(db, num_client)
                         else:
                             print("Afficher Facture")
                         utils.print_client_menu()
@@ -125,3 +127,17 @@ def see_invoice(db, num_client, date):
         print("Client supprimé avec succès.")
     except:
         print("Erreur lors de la suppression du client.")
+        
+        
+def see_purchases(db, num_client):
+    try:
+        db.cursor.execute("SELECT Numero, Quantite, DateAchat, IdDisque FROM vente WHERE NumClient = %s;", [num_client])
+    except:
+        print("Erreur lors de l'affichage des achats.")
+    else:
+        titles = ["Numéro", "Quantité", "Date d'Achat", "ID Disque"]
+        data = []
+        for Numero, Quantite, DateAchat, IdDisque in db.cursor:
+            data.append([str(Numero), str(Quantite), str(DateAchat), str(IdDisque)])
+        utils.print_data(titles, data)
+
