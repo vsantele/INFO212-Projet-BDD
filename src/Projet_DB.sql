@@ -287,8 +287,6 @@ begin
 end//
 delimiter ;
 
-drop trigger if exists TRG_INSERT_STOCK;
-delimiter //
 drop trigger if exists TRG_UPDATE_STOCK;
 delimiter //
 create trigger TRG_UPDATE_STOCK
@@ -335,6 +333,20 @@ from VENTE v
 inner join CLIENT c on v.Client = c.NumClient
 inner join DISQUE d on v.Disque = d.IdDisque
 inner join PERSONNE p on c.Personne = p.IdPersonne;
+
+drop view if exists INFO_CLIENT;
+create view INFO_CLIENT as
+select c.NumClient, p.Nom, p.Prenom, p.Telephone, a.Pays, a.Ville, a.Rue, a.CodePostal
+from CLIENT c
+inner join PERSONNE p on c.Personne = p.IdPersonne
+inner join ADRESSE a on p.Adresse = a.IdAdresse;
+
+drop view if exists INFO_COMMANDE;
+create view INFO_COMMANDE as
+select c.IdCommande, t.Disque, c.Quantite, c.DateLivraison, c.DateCommande, f.Nom as Fournisseur
+from CONTENU t
+inner join COMMANDE c on t.Commande = c.IdCommande
+inner join FOURNISSEUR f on c.Fournisseur = f.IdFournisseur;
 
 
 -- Insert Section
