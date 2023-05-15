@@ -97,3 +97,16 @@ def view_client(db, num_client):
 
 if __name__ == "__main__":
     main()
+    
+    
+def see_invoice(db, num_client, date):
+    try:
+        db.cursor.execute("SELECT Numero, Nom, Prenom, IdDisque, DateAchat, Quantite, PrixTotal FROM facture WHERE NumClient = %s AND Date Achat = %s;", [num_client, date])
+    except:
+        print("Erreur lors de l'affichage de la facture.")
+    else:
+        titles = ["Numéro", "Nom", "Prénom", "ID Disque", "Date Achat", "Quantité", "Prix Total"]
+        data = []
+        for row in db.cursor:
+            data.append([str(row[0]), row[1], row[2], str(row[3]), str(row[4]), str(row[5]), str(row[6])])
+        utils.print_data(titles, data)
