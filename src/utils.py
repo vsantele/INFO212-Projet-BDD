@@ -2,6 +2,7 @@ from database import Database
 from retry import retry
 from pays import Countries
 from enum import Enum
+from datetime import date
 
 class User_choices(Enum):
     ADD_CLI = 1
@@ -14,8 +15,9 @@ class Client_choices(Enum):
     EDI_CLI = 2
     DELETE_CLI = 3
     ADD_BUY = 4
-    VIEW_BILL = 5
-    QUIT = 6
+    SEE_INVOICE = 5
+    SEE_PURCHASES = 6
+    QUIT = 7
 
 COUNTRIES = [country.name for country in Countries()]
 
@@ -38,7 +40,8 @@ def print_client_menu():
     print("║ 3 - Supprimer client             ║")
     print("║ 4 - Effectuer un achat           ║")
     print("║ 5 - Afficher facture             ║")
-    print("║ 6 - Quitter                      ║")
+    print("║ 6 - Afficher vos achats          ║")
+    print("║ 7 - Quitter                      ║")
     print("╚══════════════════════════════════╝")
 
 def print_data(titles, data):
@@ -120,4 +123,12 @@ def get_employe_db(db):
     else:
         return id_employe
 
+@retry(ValueError)
+def get_date():
+    date_invoice = input("Entrez la date de la facture (AAAA-MM-JJ) : ")
+    date_list = date_invoice.split("-")
+    if len(date_list) != 3:
+        raise ValueError
+    else:
+        return date(int(date_list[0]), int(date_list[1]), int(date_list[2]))
     

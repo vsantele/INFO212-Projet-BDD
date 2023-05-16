@@ -24,11 +24,13 @@ def main():
                         elif client_choice == utils.Client_choices.EDI_CLI.value:
                             edit_client(db, num_client)
                         elif client_choice == utils.Client_choices.DELETE_CLI.value:
-                            print("Supprimer client")
+                            is_deleted = delete_client(db, num_client)
                         elif client_choice == utils.Client_choices.ADD_BUY.value:
                             make_purchase(db, num_client)
+                        elif client_choice == utils.Client_choices.SEE_INVOICE.value:
+                            see_invoice(db, num_client)
                         else:
-                            print("Afficher Facture")
+                            see_purchases(db, num_client)
                         if not is_deleted:
                             utils.print_client_menu()
                             client_choice = utils.get_choice(utils.Client_choices.VIEW_CLI.value, utils.Client_choices.QUIT.value)
@@ -145,9 +147,68 @@ def make_purchase(db, num_client):
         print("Erreur lors de l'achat")
     else:
         print("Achat effectué")
-
+   
+def see_invoice(db, num_client):
+    date_invoice = utils.get_date()
+    try:
+        db.cursor.execute("select Numero, Nom, Prenom, IdDisque, DateAchat, Quantite, PrixTotal FROM FACTURE WHERE NumClient = %s AND DateAchat = %s;", [num_client, str(date_invoice)])
+    except:
+        print("Erreur lors de l'affichage de la facture.")
+    else:
+        titles = ["Numéro", "Nom", "Prénom", "ID Disque", "Date Achat", "Quantité", "Prix Total"]
+        data = []
+        for row in db.cursor:
+            data.append([str(row[0]), row[1], row[2], str(row[3]), str(row[4]), str(row[5]), str(row[6])])
+        if len(data) == 0:
+            print("Pas de facture pour cette date")
+        else:
+            utils.print_data(titles, data)
+              
+def delete_client(db, num_client):
+    res = input("Voulez-vous vraiment supprimer vos informations ? (Y/N) : ")
+    if res.upper() == "Y":
+        try:
+            db.cursor.execute("select c.Personne, p.Adresse from CLIENT c, PERSONNE p where c.NumClient = %s and c.Personne = p.IdPersonne;", [num_client])
+            for i in db.cursor:
+                id_personne = i[0]
+                id_adresse = i[1]
+            db.cursor.execute("update VENTE set Client = null where Client = %s;", [num_client])
+            db.cursor.execute("delete from CLIENT where NumClient = %s;", [num_client])
+            db.cursor.execute("select count(*) from EMPLOYE where Personne = %s;", [id_personne])
+            for i in db.cursor:
+                nb_employe = i[0]
+            if nb_employe == 0:
+                db.cursor.execute("delete from PERSONNE where IdPersonne = %s;", [id_personne])
+                db.cursor.execute("select count(*) from PERSONNE where Adresse = %s;", [id_adresse])
+                for i in db.cursor:
+                    nb_personne = i[0]
+                if nb_personne == 0:
+                    db.cursor.execute("delete from ADRESSE where IdAdresse = %s;", [id_adresse])
+            db.connection.commit()
+        except:
+            print("Erreur lors de la suppression")
+            return False
+        else:
+            print("Client supprimé")
+            return True       
+    else:
+        return False
+               
+def see_purchases(db, num_client):
+    try:
+        db.cursor.execute("SELECT Numero, Quantite, DateAchat, Disque FROM vente WHERE Client = %s;", [num_client])
+    except:
+        print("Erreur lors de l'affichage des achats.")
+    else:
+        titles = ["Numéro", "Quantité", "Date d'Achat", "ID Disque"]
+        data = []
+        for Numero, Quantite, DateAchat, IdDisque in db.cursor:
+            data.append([str(Numero), str(Quantite), str(DateAchat), str(IdDisque)])
+        if len(data) == 0:
+            print("Vous n'avez aucun achats")
+        else:
+            utils.print_data(titles, data)
 
 
 if __name__ == "__main__":
     main()
-
