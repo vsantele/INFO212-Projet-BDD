@@ -1,3 +1,4 @@
+from database import Database
 from retry import retry
 from pays import Countries
 from enum import Enum
@@ -90,4 +91,33 @@ def get_num_client():
         raise ValueError
     else:
         return num_client
+    
+@retry(ValueError)
+def get_quantite():
+    quantite = int(input("Entrez la quantité désirée : "))
+    if quantite <= 0:
+        raise ValueError
+    else:
+        return quantite
+
+@retry(ValueError)
+def get_disque_db(db):
+    disque = input("Entrez l'identifiant du disque souhaité : ")
+    db.cursor.execute("select * from DISQUE where IdDisque = %s;", [disque])
+    disque_db = [i for i in db.cursor]
+    if len(disque_db) == 0:
+        raise ValueError
+    else:
+        return disque
+
+@retry(ValueError)
+def get_employe_db(db):
+    id_employe = int(input("Entrez l'identifiant de l'employé qui a effectué la vente : "))
+    db.cursor.execute("select * from EMPLOYE where Personne = %s;", [id_employe])
+    employe_db = [i for i in db.cursor]
+    if len(employe_db) == 0:
+        raise ValueError
+    else:
+        return id_employe
+
     
