@@ -33,7 +33,7 @@ def main():
                         elif client_choice == utils.Client_choices.EDI_CLI.value:
                             edit_client(num_client)
                         elif client_choice == utils.Client_choices.DELETE_CLI.value:
-                            is_deleted = delete_client(db, num_client)
+                            is_deleted = delete_client(num_client)
                         elif client_choice == utils.Client_choices.ADD_BUY.value:
                             make_purchase(num_client)
                         elif client_choice == utils.Client_choices.SEE_INVOICE.value:
