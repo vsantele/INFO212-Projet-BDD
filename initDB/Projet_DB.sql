@@ -1,16 +1,16 @@
 -- *********************************************
--- * Standard SQL generation                   
+-- * Standard SQL generation
 -- *--------------------------------------------
--- * DB-MAIN version: 11.0.2              
--- * Generator date: Sep 14 2021              
--- * Generation date: Sat Apr 29 14:31:54 2023 
--- * LUN file: D:\Documents\UNamur\Bloc 1\Q2\Base de Données\INFO212-Projet-BDD\docs\Projet_DB.lun 
--- * Schema: Projet_DB/SQL 
--- ********************************************* 
+-- * DB-MAIN version: 11.0.2
+-- * Generator date: Sep 14 2021
+-- * Generation date: Sat Apr 29 14:31:54 2023
+-- * LUN file: D:\Documents\UNamur\Bloc 1\Q2\Base de Données\INFO212-Projet-BDD\docs\Projet_DB.lun
+-- * Schema: Projet_DB/SQL
+-- *********************************************
 
 
 -- Database Section
--- ________________ 
+-- ________________
 
 use CLICOM;
 
@@ -18,13 +18,13 @@ use CLICOM;
 -- Drop Tables
 -- ___________
 
-drop table if exists `ADRESSE`, `ALBUM`, `APPARTIENT`, `ARTISTE`, `CLIENT`, `COMMANDE`, 
-`CONTENU`, `DISQUE`, `DISQUEALBUM`, `DISQUESINGLE`, `EMPLOYE`, `FOURNISSEUR`, `GERANT`, 
+drop table if exists `ADRESSE`, `ALBUM`, `APPARTIENT`, `ARTISTE`, `CLIENT`, `COMMANDE`,
+`CONTENU`, `DISQUE`, `DISQUEALBUM`, `DISQUESINGLE`, `EMPLOYE`, `FOURNISSEUR`, `GERANT`,
 `INTERPRETE`, `MAGASIN`, `PERSONNE`, `PRODUCTEUR`, `PRODUIT`, `SON`, `STOCK`, `VENTE`;
 
 
 -- Tables Section
--- ______________ 
+-- ______________
 
 create table ADRESSE (
      IdAdresse int not null auto_increment,
@@ -139,7 +139,7 @@ create table DISQUE (
      foreign key (Fournisseur) references FOURNISSEUR(IdFournisseur) on delete no action on update cascade,
      check (PrixAchat > 0),
      check (PrixVente > 0));
-     
+
 create table CONTENU (
      Commande int not null,
      Disque char(30) not null,
@@ -209,7 +209,7 @@ create table VENTE (
 
 
 -- Constraints Section
--- ___________________ 
+-- ___________________
 
 drop trigger if exists TRG_DISQUE_INSERT_SURTYPE;
 delimiter //
@@ -299,7 +299,7 @@ begin
 			insert into COMMANDE(DateCommande, Quantite, Fournisseur) values(curdate(), 10, 'FOUDB01');
 			insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
         end if;
-        set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;        
+        set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
     end if;
 end//
 delimiter ;
@@ -316,7 +316,7 @@ begin
 			insert into COMMANDE(DateCommande, Quantite, Fournisseur) values(curdate(), 10, 'FOUDB01');
 			insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
         end if;
-        set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;        
+        set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
     end if;
 end//
 delimiter ;
@@ -391,11 +391,11 @@ BEFORE INSERT ON ALBUM
 FOR EACH ROW
 BEGIN
     DECLARE artist_count INT;
-    
+
     SELECT COUNT(*) INTO artist_count
     FROM ARTISTE
     WHERE IdArtiste = NEW.Artiste;
-    
+
     IF artist_count = 0 THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'L''artiste spécifié n''existe pas dans la table "ARTISTE". Insertion annulée.';
@@ -419,7 +419,7 @@ BEFORE UPDATE ON DISQUE
 FOR EACH ROW
 BEGIN
     IF NEW.PrixVente < OLD.PrixAchat THEN
-        SIGNAL SQLSTATE '45000' 
+        SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Le prix de vente ne peut pas être inférieur au prix d''achat.';
     END IF;
 END//
@@ -438,7 +438,7 @@ DELIMITER ;
 
 drop view if exists FACTURE;
 create view FACTURE as
-select v.Numero, c.NumClient, p.Nom, p.Prenom, d.IdDisque, v.DateAchat, v.Quantite, 
+select v.Numero, c.NumClient, p.Nom, p.Prenom, d.IdDisque, v.DateAchat, v.Quantite,
        (d.PrixVente * v.Quantite) AS PrixTotal
 from VENTE v
 inner join CLIENT c on v.Client = c.NumClient
