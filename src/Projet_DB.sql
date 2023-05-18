@@ -339,9 +339,9 @@ end if;
 if single > 0 and new.disquesingle is not null then
     signal sqlstate '45000' set message_text = "Les champs 'Album' et 'Single' du disque sont mutuellement exclusifs. Veuillez choisir l'un ou l'autre, mais pas les deux.";
 end if;
-end//
+end// */
 delimiter ;
-*/
+
 drop trigger if exists trg_magasin_delete_with_stock;
 delimiter //
 create trigger trg_magasin_delete_with_stock
@@ -356,6 +356,80 @@ if stock > 0 then
 end if;
 end//
 delimiter ;
+
+--_________________________ Triggers supplémeantaires________________________________________________
+
+
+/* Description : Trigger qui s'assure du fait que la quantité du stock est toujours supérieure ou égale à 2
+pour éviter de tomber dans une répture de stock*/
+
+ -- EXtra 1
+DELIMITER //
+
+CREATE TRIGGER stock_quantity_trigger
+BEFORE UPDATE ON STOCK
+FOR EACH ROW
+BEGIN
+    IF NEW.Quantite < 2 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'La quantité du stock ne peut pas être inférieure à 2 !!!!!';
+    END IF;
+END//
+
+DELIMITER ;
+
+
+-- EXTRA 2
+
+/* Description : Trigger avant l'insertion dans la table "ALBUM" : VérifieR si l'artiste spécifié
+ dans l'insertion existe dans la table "ARTISTE". Si l'artiste n'existe pas, annulation l'insertion.*/
+
+DELIMITER //
+
+CREATE TRIGGER check_artist_existence_trigger
+BEFORE INSERT ON ALBUM
+FOR EACH ROW
+BEGIN
+    DECLARE artist_count INT;
+    
+    SELECT COUNT(*) INTO artist_count
+    FROM ARTISTE
+    WHERE IdArtiste = NEW.Artiste;
+    
+    IF artist_count = 0 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'L''artiste spécifié n''existe pas dans la table "ARTISTE". Insertion annulée.';
+    END IF;
+END//
+
+DELIMITER ;
+
+
+-- EXTRA 3
+
+/* Description : Trigger avant la mise à jour de la table "DISQUE" : Il vérifiez si le prix de vente
+ mis à jour est inférieur au prix d'achat. Si c'est le cas, il empêche la mise à jour.*/
+
+DROP TRIGGER IF EXISTS before_update_disque;
+
+DELIMITER //
+
+CREATE TRIGGER before_update_disque
+BEFORE UPDATE ON DISQUE
+FOR EACH ROW
+BEGIN
+    IF NEW.PrixVente < OLD.PrixAchat THEN
+        SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT = 'Le prix de vente ne peut pas être inférieur au prix d''achat.';
+    END IF;
+END//
+
+DELIMITER ;
+
+
+
+
+
 
 
 
