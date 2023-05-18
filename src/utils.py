@@ -4,11 +4,13 @@ from pays import Countries
 from enum import Enum
 from datetime import date
 
+
 class User_choices(Enum):
     ADD_CLI = 1
     CLIENT = 2
     COMPTA = 3
     QUIT = 4
+
 
 class Client_choices(Enum):
     VIEW_CLI = 1
@@ -19,7 +21,9 @@ class Client_choices(Enum):
     SEE_PURCHASES = 6
     QUIT = 7
 
+
 COUNTRIES = [country.name for country in Countries()]
+
 
 def print_user_menu():
     print("╔════════════════════╗")
@@ -30,6 +34,7 @@ def print_user_menu():
     print("║ 3 - Servive compta ║")
     print("║ 4 - Quitter        ║")
     print("╚════════════════════╝")
+
 
 def print_client_menu():
     print("╔══════════════════════════════════╗")
@@ -44,16 +49,19 @@ def print_client_menu():
     print("║ 7 - Quitter                      ║")
     print("╚══════════════════════════════════╝")
 
+
 def print_data(titles, data):
     to_print = [titles] + data
-    form=""
+    form = ""
     for i in range(len(to_print[0])):
-        form += "{" + str(i) + ":" + str(max_len(to_print,i) + 3) + "}"
+        form += "{" + str(i) + ":" + str(max_len(to_print, i) + 3) + "}"
     for val in to_print:
         print(form.format(*val))
 
+
 def max_len(data, index):
     return max([len(i[index]) for i in data])
+
 
 @retry(ValueError)
 def get_choice(min, max):
@@ -63,6 +71,7 @@ def get_choice(min, max):
     else:
         return choice
 
+
 @retry(ValueError)
 def get_phone_number():
     phone_number = int(input("Entrez votre numéro de téléphone : "))
@@ -70,6 +79,7 @@ def get_phone_number():
         raise ValueError
     else:
         return phone_number
+
 
 @retry(ValueError)
 def get_country():
@@ -79,6 +89,7 @@ def get_country():
     else:
         return country
 
+
 @retry(ValueError)
 def get_postal_code():
     postal_code = int(input("Entrez votre code postale : "))
@@ -87,6 +98,7 @@ def get_postal_code():
     else:
         return postal_code
 
+
 @retry(ValueError)
 def get_num_client():
     num_client = int(input("Entrez votre numéro client : "))
@@ -94,7 +106,8 @@ def get_num_client():
         raise ValueError
     else:
         return num_client
-    
+
+
 @retry(ValueError)
 def get_quantite():
     quantite = int(input("Entrez la quantité désirée : "))
@@ -102,6 +115,7 @@ def get_quantite():
         raise ValueError
     else:
         return quantite
+
 
 @retry(ValueError)
 def get_disque_db(db):
@@ -113,15 +127,19 @@ def get_disque_db(db):
     else:
         return disque
 
+
 @retry(ValueError)
 def get_employe_db(db):
-    id_employe = int(input("Entrez l'identifiant de l'employé qui a effectué la vente : "))
+    id_employe = int(
+        input("Entrez l'identifiant de l'employé qui a effectué la vente : ")
+    )
     db.cursor.execute("select * from EMPLOYE where Personne = %s;", [id_employe])
     employe_db = [i for i in db.cursor]
     if len(employe_db) == 0:
         raise ValueError
     else:
         return id_employe
+
 
 @retry(ValueError)
 def get_date():
@@ -131,4 +149,3 @@ def get_date():
         raise ValueError
     else:
         return date(int(date_list[0]), int(date_list[1]), int(date_list[2]))
-    

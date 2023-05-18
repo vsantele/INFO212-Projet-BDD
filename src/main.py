@@ -1,6 +1,7 @@
 from database import Database
 import utils
 
+
 def main():
     try:
         db = Database()
@@ -8,7 +9,9 @@ def main():
         print("Impossible de se connecter à la base de données")
     else:
         utils.print_user_menu()
-        user_choice = utils.get_choice(utils.User_choices.ADD_CLI.value, utils.User_choices.QUIT.value)
+        user_choice = utils.get_choice(
+            utils.User_choices.ADD_CLI.value, utils.User_choices.QUIT.value
+        )
         while user_choice != utils.User_choices.QUIT.value:
             if user_choice == utils.User_choices.ADD_CLI.value:
                 add_client(db)
@@ -16,9 +19,15 @@ def main():
                 connected, num_client = connect_client(db)
                 if connected:
                     utils.print_client_menu()
-                    client_choice = utils.get_choice(utils.Client_choices.VIEW_CLI.value, utils.Client_choices.QUIT.value)
+                    client_choice = utils.get_choice(
+                        utils.Client_choices.VIEW_CLI.value,
+                        utils.Client_choices.QUIT.value,
+                    )
                     is_deleted = False
-                    while not is_deleted and client_choice != utils.Client_choices.QUIT.value:
+                    while (
+                        not is_deleted
+                        and client_choice != utils.Client_choices.QUIT.value
+                    ):
                         if client_choice == utils.Client_choices.VIEW_CLI.value:
                             view_client(db, num_client)
                         elif client_choice == utils.Client_choices.EDI_CLI.value:
@@ -33,12 +42,18 @@ def main():
                             see_purchases(db, num_client)
                         if not is_deleted:
                             utils.print_client_menu()
-                            client_choice = utils.get_choice(utils.Client_choices.VIEW_CLI.value, utils.Client_choices.QUIT.value)
+                            client_choice = utils.get_choice(
+                                utils.Client_choices.VIEW_CLI.value,
+                                utils.Client_choices.QUIT.value,
+                            )
             elif user_choice == utils.User_choices.COMPTA.value:
                 print("Service compta")
             utils.print_user_menu()
-            user_choice = utils.get_choice(utils.User_choices.ADD_CLI.value, utils.User_choices.QUIT.value)
+            user_choice = utils.get_choice(
+                utils.User_choices.ADD_CLI.value, utils.User_choices.QUIT.value
+            )
         db.close()
+
 
 def add_client(db):
     name = input("Entrez votre nom : ")
@@ -49,16 +64,21 @@ def add_client(db):
     street = input("Entrez votre rue : ")
     postal_code = utils.get_postal_code()
     try:
-        db.cursor.execute("insert into ADRESSE(Rue, CodePostal, Ville, Pays) values(%s,%s,%s,%s);", 
-                        (street,postal_code,city,country))
-        db.cursor.execute("insert into PERSONNE(Nom, Prenom, Telephone, Adresse) values(%s,%s,%s,last_insert_id());",
-                        (name,first_name,phone_number))
+        db.cursor.execute(
+            "insert into ADRESSE(Rue, CodePostal, Ville, Pays) values(%s,%s,%s,%s);",
+            (street, postal_code, city, country),
+        )
+        db.cursor.execute(
+            "insert into PERSONNE(Nom, Prenom, Telephone, Adresse) values(%s,%s,%s,last_insert_id());",
+            (name, first_name, phone_number),
+        )
         db.cursor.execute("insert into CLIENT(Personne) values(last_insert_id())")
         db.connection.commit()
     except:
         print("Erreur lors de l'insertion du client")
     else:
         print("Client Ajouté")
+
 
 def connect_client(db):
     num_client = utils.get_num_client()
@@ -75,21 +95,56 @@ def connect_client(db):
             print("Connecté")
             return (True, num_client)
 
-def view_client(db, num_client):  
-    try: 
-        db.cursor.execute("select * from INFO_CLIENT where NumClient = %s;", [num_client])
+
+def view_client(db, num_client):
+    try:
+        db.cursor.execute(
+            "select * from INFO_CLIENT where NumClient = %s;", [num_client]
+        )
     except:
         print("Erreur lors de l'affichage")
     else:
-        titles = ["Numéro Client", "Nom", "Prénom", "Téléphone", "Pays", "Ville", "Rue", "Code Postal"]
+        titles = [
+            "Numéro Client",
+            "Nom",
+            "Prénom",
+            "Téléphone",
+            "Pays",
+            "Ville",
+            "Rue",
+            "Code Postal",
+        ]
         data = []
-        for NumClient, Nom, Prenom, Telephone, Pays, Ville, Rue, CodePostal in db.cursor:
-            data.append([str(NumClient), Nom, Prenom, str(int(Telephone)), Pays, Ville, Rue, str(int(CodePostal))])
+        for (
+            NumClient,
+            Nom,
+            Prenom,
+            Telephone,
+            Pays,
+            Ville,
+            Rue,
+            CodePostal,
+        ) in db.cursor:
+            data.append(
+                [
+                    str(NumClient),
+                    Nom,
+                    Prenom,
+                    str(int(Telephone)),
+                    Pays,
+                    Ville,
+                    Rue,
+                    str(int(CodePostal)),
+                ]
+            )
         utils.print_data(titles, data)
+
 
 def edit_client(db, num_client):
     view_client(db, num_client)
-    name, first_name, phone_number, country, city, street, postal_code = (None for i in range(7))
+    name, first_name, phone_number, country, city, street, postal_code = (
+        None for i in range(7)
+    )
     res = input("Voulez vous modifier votre Nom ? (Y/N) : ")
     if res.upper() == "Y":
         name = input("Entrez votre nom : ")
@@ -112,91 +167,157 @@ def edit_client(db, num_client):
     if res.upper() == "Y":
         postal_code = utils.get_postal_code()
     try:
-        db.cursor.execute("select c.Personne, p.Adresse from CLIENT c, PERSONNE p where c.NumClient = %s and c.Personne = p.IdPersonne;", [num_client])
+        db.cursor.execute(
+            "select c.Personne, p.Adresse from CLIENT c, PERSONNE p where c.NumClient = %s and c.Personne = p.IdPersonne;",
+            [num_client],
+        )
         for i in db.cursor:
             id_personne = i[0]
             id_adresse = i[1]
         if name is not None:
-            db.cursor.execute("update PERSONNE set Nom = %s where IdPersonne = %s", [name, id_personne])
+            db.cursor.execute(
+                "update PERSONNE set Nom = %s where IdPersonne = %s",
+                [name, id_personne],
+            )
         if first_name is not None:
-            db.cursor.execute("update PERSONNE set Prenom = %s where IdPersonne = %s", [first_name, id_personne])
+            db.cursor.execute(
+                "update PERSONNE set Prenom = %s where IdPersonne = %s",
+                [first_name, id_personne],
+            )
         if phone_number is not None:
-            db.cursor.execute("update PERSONNE set Telephone = %s where IdPersonne = %s", [phone_number, id_personne])
+            db.cursor.execute(
+                "update PERSONNE set Telephone = %s where IdPersonne = %s",
+                [phone_number, id_personne],
+            )
         if country is not None:
-            db.cursor.execute("update ADRESSE set Pays = %s where IdAdresse = %s", [country, id_adresse])
+            db.cursor.execute(
+                "update ADRESSE set Pays = %s where IdAdresse = %s",
+                [country, id_adresse],
+            )
         if city is not None:
-            db.cursor.execute("update ADRESSE set Ville = %s where IdAdresse = %s", [city, id_adresse])
+            db.cursor.execute(
+                "update ADRESSE set Ville = %s where IdAdresse = %s", [city, id_adresse]
+            )
         if street is not None:
-            db.cursor.execute("update ADRESSE set Rue = %s where IdAdresse = %s", [street, id_adresse])
+            db.cursor.execute(
+                "update ADRESSE set Rue = %s where IdAdresse = %s", [street, id_adresse]
+            )
         if postal_code is not None:
-            db.cursor.execute("update ADRESSE set CodePostal = %s where IdAdresse = %s", [postal_code, id_adresse])
+            db.cursor.execute(
+                "update ADRESSE set CodePostal = %s where IdAdresse = %s",
+                [postal_code, id_adresse],
+            )
         db.connection.commit()
     except:
         print("Erreur lors de la modification")
     else:
         print("Modification effectuée")
- 
+
+
 def make_purchase(db, num_client):
     disque = utils.get_disque_db(db)
     quantite = utils.get_quantite()
     id_employe = utils.get_employe_db(db)
     try:
-        db.cursor.execute("insert into VENTE(Quantite, DateAchat, Disque, Client, Employe) values(%s, curdate(), %s, %s, %s)", [quantite, disque, num_client, id_employe])
+        db.cursor.execute(
+            "insert into VENTE(Quantite, DateAchat, Disque, Client, Employe) values(%s, curdate(), %s, %s, %s)",
+            [quantite, disque, num_client, id_employe],
+        )
         db.connection.commit()
     except:
         print("Erreur lors de l'achat")
     else:
         print("Achat effectué")
-   
+
+
 def see_invoice(db, num_client):
     date_invoice = utils.get_date()
     try:
-        db.cursor.execute("select Numero, Nom, Prenom, IdDisque, DateAchat, Quantite, PrixTotal FROM FACTURE WHERE NumClient = %s AND DateAchat = %s;", [num_client, str(date_invoice)])
+        db.cursor.execute(
+            "select Numero, Nom, Prenom, IdDisque, DateAchat, Quantite, PrixTotal FROM FACTURE WHERE NumClient = %s AND DateAchat = %s;",
+            [num_client, str(date_invoice)],
+        )
     except:
         print("Erreur lors de l'affichage de la facture.")
     else:
-        titles = ["Numéro", "Nom", "Prénom", "ID Disque", "Date Achat", "Quantité", "Prix Total"]
+        titles = [
+            "Numéro",
+            "Nom",
+            "Prénom",
+            "ID Disque",
+            "Date Achat",
+            "Quantité",
+            "Prix Total",
+        ]
         data = []
         for row in db.cursor:
-            data.append([str(row[0]), row[1], row[2], str(row[3]), str(row[4]), str(row[5]), str(row[6])])
+            data.append(
+                [
+                    str(row[0]),
+                    row[1],
+                    row[2],
+                    str(row[3]),
+                    str(row[4]),
+                    str(row[5]),
+                    str(row[6]),
+                ]
+            )
         if len(data) == 0:
             print("Pas de facture pour cette date")
         else:
             utils.print_data(titles, data)
-              
+
+
 def delete_client(db, num_client):
     res = input("Voulez-vous vraiment supprimer vos informations ? (Y/N) : ")
     if res.upper() == "Y":
         try:
-            db.cursor.execute("select c.Personne, p.Adresse from CLIENT c, PERSONNE p where c.NumClient = %s and c.Personne = p.IdPersonne;", [num_client])
+            db.cursor.execute(
+                "select c.Personne, p.Adresse from CLIENT c, PERSONNE p where c.NumClient = %s and c.Personne = p.IdPersonne;",
+                [num_client],
+            )
             for i in db.cursor:
                 id_personne = i[0]
                 id_adresse = i[1]
-            db.cursor.execute("update VENTE set Client = null where Client = %s;", [num_client])
+            db.cursor.execute(
+                "update VENTE set Client = null where Client = %s;", [num_client]
+            )
             db.cursor.execute("delete from CLIENT where NumClient = %s;", [num_client])
-            db.cursor.execute("select count(*) from EMPLOYE where Personne = %s;", [id_personne])
+            db.cursor.execute(
+                "select count(*) from EMPLOYE where Personne = %s;", [id_personne]
+            )
             for i in db.cursor:
                 nb_employe = i[0]
             if nb_employe == 0:
-                db.cursor.execute("delete from PERSONNE where IdPersonne = %s;", [id_personne])
-                db.cursor.execute("select count(*) from PERSONNE where Adresse = %s;", [id_adresse])
+                db.cursor.execute(
+                    "delete from PERSONNE where IdPersonne = %s;", [id_personne]
+                )
+                db.cursor.execute(
+                    "select count(*) from PERSONNE where Adresse = %s;", [id_adresse]
+                )
                 for i in db.cursor:
                     nb_personne = i[0]
                 if nb_personne == 0:
-                    db.cursor.execute("delete from ADRESSE where IdAdresse = %s;", [id_adresse])
+                    db.cursor.execute(
+                        "delete from ADRESSE where IdAdresse = %s;", [id_adresse]
+                    )
             db.connection.commit()
         except:
             print("Erreur lors de la suppression")
             return False
         else:
             print("Client supprimé")
-            return True       
+            return True
     else:
         return False
-               
+
+
 def see_purchases(db, num_client):
     try:
-        db.cursor.execute("SELECT Numero, Quantite, DateAchat, Disque FROM vente WHERE Client = %s;", [num_client])
+        db.cursor.execute(
+            "SELECT Numero, Quantite, DateAchat, Disque FROM vente WHERE Client = %s;",
+            [num_client],
+        )
     except:
         print("Erreur lors de l'affichage des achats.")
     else:
