@@ -10,7 +10,7 @@
 - [x] Exporter ces données dans un fichier SQL
 - [x] Créer la vue Facture
 - [x] Créer les triggers pour les commandes
-- [ ] Voir s'il faut d'autres triggers?
+- [x] Voir s'il faut d'autres triggers?
 
 ## Code
 
