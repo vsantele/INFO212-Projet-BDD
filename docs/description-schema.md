@@ -1,13 +1,11 @@
-# Description du schéma de la base de données
+Dans le cadre de notre projet du cours : [INFOB212] Base de données ( 2e partie ), nous avons choisi de modéliser dans le domaine de l’industrie musicale, où des artistes talentueux créent de la musique, des albums sont enregistrés et des disques sont distribués aux fans avides. Au cœur de cette industrie dynamique se trouvent différentes entités interconnectées, telles que des artistes, des albums, des chansons, des clients, des commandes et des fournisseurs. Suivons le parcours d'un album depuis sa création jusqu'à sa vente.
 
-Un magasin possède un gérant, un stock, une adresse, des employés et un stock.
+Tout commence par un artiste, qui peut être un individu ou un groupe. Chaque artiste posséde un nom et pourrait appartenir à un groupe ou non. Certains artistes se regroupent pour former des groupes de musique, et d’autres préfrent de produire en solo. 
+Un artiste ou un groupe produit des albums, ces derniers ont un titre et un genre musical. Un album peut avoir jusqu'à cinq genres différents associés. Par exemple, un album pourrait être classé à la fois comme rock, pop et indie. Chaque album reçoit un numéro d'album unique pour le distinguer des autres.
 
-Un employé est une personne qui possède un salaire. Une personne possède une adresse, un nom et un prénom. Un gérant est un employé qui gère un magasin.
+les chansons composent un album et sont associées à un disque, qui peut être soit un disque single, soit un disque d'album complet. Les disques ont un prix de vente un prix d'achat.
 
-Un stock est un ensemble de disques, un magasin et une quantité. Un disque a un prix. Un disque est soit un disque album soit un disque single.
+Quand un album est prêt dans le stock, il peut être commandé par les clients. Les clients possédent un numéro de client unique. Lorsqu'un client passe une commande, les détails de cette commande sont enregistrés, tels que la date de commande, la date de livraison et la quantité commandée. Chaque commande est associée à un fournisseur avec un ID unique et un nom. Nous nous assurons bien de gérer notre stock pour éviter toute rupture de stock envisageable. 
+Les commandes sont évidémment liées aux disques correspondants. Ainsi, nous pouvons savoir quels disques ont été inclus dans chaque commande. En fin de compte, une facture est générée pour chaque commande, indiquant la date d'achat et le prix total payé par le client.
 
-Un disque album est un disque qui contient un album. Un disque single est un disque qui contient un son. Un album possède un titre, un artiste et des chansons.
-
-Un artiste est une personne qui possède un nom d'artiste et des albums. Un producteur est un artiste qui produit des sons. Un album possède un titre, un artiste et des chansons. Une chanson possède un titre, une durée, un artiste et potientiellement des feats et des producteurs. Si c'est un remix, il contient une référence vers l'original.
-
-Une vente est faite dans un magasin par un vendeur pour des disques à une certaine date.
+L'ensemble de ce processus est géré par divers employés qui ont des adressses mail, un salaire et une référence aux magasins auxquels ils sont affiliés. De plus, les gérants des magasins sont répertoriés aussi, ayant des informations supplémentaires telles que la possession d'une voiture de service. Ainsi, les différentes entités interagissent entre elles grâce à des relations soigneusement établies.
