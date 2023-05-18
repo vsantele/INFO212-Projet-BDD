@@ -2,7 +2,7 @@
 
 ## Général
 
-- [ ] Mettre à jour le texte correspondant à la DB
+- [x] Mettre à jour le texte correspondant à la DB
 
 ## DB
 
