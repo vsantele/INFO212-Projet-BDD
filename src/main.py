@@ -14,9 +14,9 @@ def main():
         )
         while user_choice != utils.User_choices.QUIT.value:
             if user_choice == utils.User_choices.ADD_CLI.value:
-                add_client(db)
+                add_client()
             elif user_choice == utils.User_choices.CLIENT.value:
-                connected, num_client = connect_client(db)
+                connected, num_client = connect_client()
                 if connected:
                     utils.print_client_menu()
                     client_choice = utils.get_choice(
@@ -29,17 +29,17 @@ def main():
                         and client_choice != utils.Client_choices.QUIT.value
                     ):
                         if client_choice == utils.Client_choices.VIEW_CLI.value:
-                            view_client(db, num_client)
+                            view_client(num_client)
                         elif client_choice == utils.Client_choices.EDI_CLI.value:
-                            edit_client(db, num_client)
+                            edit_client(num_client)
                         elif client_choice == utils.Client_choices.DELETE_CLI.value:
                             is_deleted = delete_client(db, num_client)
                         elif client_choice == utils.Client_choices.ADD_BUY.value:
-                            make_purchase(db, num_client)
+                            make_purchase(num_client)
                         elif client_choice == utils.Client_choices.SEE_INVOICE.value:
-                            see_invoice(db, num_client)
+                            see_invoice(num_client)
                         else:
-                            see_purchases(db, num_client)
+                            see_purchases(num_client)
                         if not is_deleted:
                             utils.print_client_menu()
                             client_choice = utils.get_choice(
@@ -55,7 +55,8 @@ def main():
         db.close()
 
 
-def add_client(db):
+def add_client():
+    db = Database()
     name = input("Entrez votre nom : ")
     first_name = input("Entrez votre prenom : ")
     phone_number = utils.get_phone_number()
@@ -80,7 +81,8 @@ def add_client(db):
         print("Client Ajouté")
 
 
-def connect_client(db):
+def connect_client():
+    db = Database()
     num_client = utils.get_num_client()
     try:
         db.cursor.execute("select * from CLIENT where NumClient = %s", [num_client])
@@ -96,7 +98,8 @@ def connect_client(db):
             return (True, num_client)
 
 
-def view_client(db, num_client):
+def view_client(num_client):
+    db = Database()
     try:
         db.cursor.execute(
             "select * from INFO_CLIENT where NumClient = %s;", [num_client]
@@ -140,8 +143,9 @@ def view_client(db, num_client):
         utils.print_data(titles, data)
 
 
-def edit_client(db, num_client):
-    view_client(db, num_client)
+def edit_client(num_client):
+    db = Database()
+    view_client(num_client)
     name, first_name, phone_number, country, city, street, postal_code = (
         None for i in range(7)
     )
@@ -214,7 +218,8 @@ def edit_client(db, num_client):
         print("Modification effectuée")
 
 
-def make_purchase(db, num_client):
+def make_purchase(num_client):
+    db = Database()
     disque = utils.get_disque_db(db)
     quantite = utils.get_quantite()
     id_employe = utils.get_employe_db(db)
@@ -230,7 +235,8 @@ def make_purchase(db, num_client):
         print("Achat effectué")
 
 
-def see_invoice(db, num_client):
+def see_invoice(num_client):
+    db = Database()
     date_invoice = utils.get_date()
     try:
         db.cursor.execute(
@@ -268,7 +274,8 @@ def see_invoice(db, num_client):
             utils.print_data(titles, data)
 
 
-def delete_client(db, num_client):
+def delete_client(num_client):
+    db = Database()
     res = input("Voulez-vous vraiment supprimer vos informations ? (Y/N) : ")
     if res.upper() == "Y":
         try:
@@ -312,7 +319,8 @@ def delete_client(db, num_client):
         return False
 
 
-def see_purchases(db, num_client):
+def see_purchases(num_client):
+    db = Database()
     try:
         db.cursor.execute(
             "SELECT Numero, Quantite, DateAchat, Disque FROM vente WHERE Client = %s;",
