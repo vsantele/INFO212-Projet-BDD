@@ -8,7 +8,7 @@
 -- * Schema: Projet_DB/SQL
 -- *********************************************
 
-
+SET GLOBAL log_bin_trust_function_creators = 1;
 -- Database Section
 -- ________________
 
@@ -114,6 +114,18 @@ create table COMMANDE (
      check (Quantite >= 0),
      check (DateCommande < Datelivraison));
 
+create table DISQUE (
+     IdDisque char(30) not null,
+     PrixVente numeric(10,4) not null,
+     PrixAchat numeric(10,4) not null,
+     Fournisseur char(30) not null,
+     DisqueAlbum char(30),
+     DisqueSingle char(30),
+     constraint ID_DISQUE_ID primary key (IdDisque),
+     foreign key (Fournisseur) references FOURNISSEUR(IdFournisseur) on delete no action on update cascade,
+     check (PrixAchat > 0),
+     check (PrixVente > 0));
+
 create table DISQUEALBUM (
      Disque char(30) not null,
      Album numeric(10) not null,
@@ -128,17 +140,6 @@ create table DISQUESINGLE (
      constraint SID_DISQU_SON_ID unique (Son),
      foreign key (Son) references SON(NumSon) on delete no action on update cascade);
 
-create table DISQUE (
-     IdDisque char(30) not null,
-     PrixVente numeric(10,4) not null,
-     PrixAchat numeric(10,4) not null,
-     Fournisseur char(30) not null,
-     DisqueAlbum char(30),
-     DisqueSingle char(30),
-     constraint ID_DISQUE_ID primary key (IdDisque),
-     foreign key (Fournisseur) references FOURNISSEUR(IdFournisseur) on delete no action on update cascade,
-     check (PrixAchat > 0),
-     check (PrixVente > 0));
 
 create table CONTENU (
      Commande int not null,
@@ -320,32 +321,32 @@ begin
     end if;
 end//
 delimiter ;
-/*
-drop trigger if exists trg_disque_update_album_single;
-delimiter //
-create trigger trg_disque_update_album_single
-before update on disque
-for each row
-begin
-declare album int;
-declare single int;
-select count(*) into album from disque where iddisque <> new.iddisque and disquealbum = new.disquealbum;
-select count(*) into single from disque where iddisque <> new.iddisque and disquesingle = new.disquesingle;
 
-if album > 0 and new.disquealbum is not null then
-    signal sqlstate '45000' set message_text = "Les champs 'Album' et 'Single' du disque sont mutuellement exclusifs. Veuillez choisir l'un ou l'autre, mais pas les deux.";
-end if;
+-- drop trigger if exists trg_disque_update_album_single;
+-- delimiter //
+-- create trigger trg_disque_update_album_single
+-- before update on disque
+-- for each row
+-- begin
+-- declare album int;
+-- declare single int;
+-- select count(*) into album from disque where iddisque <> new.iddisque and disquealbum = new.disquealbum;
+-- select count(*) into single from disque where iddisque <> new.iddisque and disquesingle = new.disquesingle;
 
-if single > 0 and new.disquesingle is not null then
-    signal sqlstate '45000' set message_text = "Les champs 'Album' et 'Single' du disque sont mutuellement exclusifs. Veuillez choisir l'un ou l'autre, mais pas les deux.";
-end if;
-end// */
+-- if album > 0 and new.disquealbum is not null then
+--     signal sqlstate '45000' set message_text = "Les champs 'Album' et 'Single' du disque sont mutuellement exclusifs. Veuillez choisir l'un ou l'autre, mais pas les deux.";
+-- end if;
+
+-- if single > 0 and new.disquesingle is not null then
+--     signal sqlstate '45000' set message_text = "Les champs 'Album' et 'Single' du disque sont mutuellement exclusifs. Veuillez choisir l'un ou l'autre, mais pas les deux.";
+-- end if;
+-- end//
 delimiter ;
 
 drop trigger if exists trg_magasin_delete_with_stock;
 delimiter //
 create trigger trg_magasin_delete_with_stock
-before delete on magasin
+before delete on MAGASIN
 for each row
 begin
 declare stock int;
@@ -357,13 +358,12 @@ end if;
 end//
 delimiter ;
 
---_________________________ Triggers supplémeantaires________________________________________________
+-- _________________________ Triggers supplémeantaires________________________________________________
 
+--  Description : Trigger qui s'assure du fait que la quantité du stock est toujours supérieure ou égale à 2
+-- pour éviter de tomber dans une répture de stock
 
-/* Description : Trigger qui s'assure du fait que la quantité du stock est toujours supérieure ou égale à 2
-pour éviter de tomber dans une répture de stock*/
-
- -- EXtra 1
+-- EXtra 1
 DELIMITER //
 
 CREATE TRIGGER stock_quantity_trigger
@@ -381,8 +381,8 @@ DELIMITER ;
 
 -- EXTRA 2
 
-/* Description : Trigger avant l'insertion dans la table "ALBUM" : VérifieR si l'artiste spécifié
- dans l'insertion existe dans la table "ARTISTE". Si l'artiste n'existe pas, annulation l'insertion.*/
+-- Description : Trigger avant l'insertion dans la table "ALBUM" : VérifieR si l'artiste spécifié
+--  dans l'insertion existe dans la table "ARTISTE". Si l'artiste n'existe pas, annulation l'insertion.
 
 DELIMITER //
 
@@ -407,8 +407,8 @@ DELIMITER ;
 
 -- EXTRA 3
 
-/* Description : Trigger avant la mise à jour de la table "DISQUE" : Il vérifiez si le prix de vente
- mis à jour est inférieur au prix d'achat. Si c'est le cas, il empêche la mise à jour.*/
+-- Description : Trigger avant la mise à jour de la table "DISQUE" : Il vérifiez si le prix de vente
+--  mis à jour est inférieur au prix d'achat. Si c'est le cas, il empêche la mise à jour.
 
 DROP TRIGGER IF EXISTS before_update_disque;
 
@@ -525,7 +525,7 @@ insert into COMMANDE values(5, '2023-05-01', '2022-11-05', 8, 'FOUDB01');
 
 insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB01', 10.5, 8.3, 'FOUDB01');
 insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB02', 11.5, 9.3, 'FOUDB01');
-insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB03', 9.5, 10, 'FOUDB01');
+insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB03', 19.5, 10, 'FOUDB01');
 insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB04', 12, 10, 'FOUDB01');
 insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB05', 15, 13.7, 'FOUDB01');
 insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB06', 9, 8.3, 'FOUDB01');
