@@ -5,7 +5,7 @@ import utils
 def main():
     try:
         db = Database()
-    except:
+    except Exception:
         print("Impossible de se connecter à la base de données")
     else:
         utils.print_user_menu()
@@ -13,6 +13,7 @@ def main():
             utils.User_choices.ADD_CLI.value, utils.User_choices.QUIT.value
         )
         while user_choice != utils.User_choices.QUIT.value:
+            view_clients()
             if user_choice == utils.User_choices.ADD_CLI.value:
                 add_client()
             elif user_choice == utils.User_choices.CLIENT.value:
@@ -104,7 +105,7 @@ def view_client(num_client):
         db.cursor.execute(
             "select * from INFO_CLIENT where NumClient = %s;", [num_client]
         )
-    except:
+    except Exception:
         print("Erreur lors de l'affichage")
     else:
         titles = [
@@ -119,28 +120,49 @@ def view_client(num_client):
         ]
         data = []
         for (
-            NumClient,
-            Nom,
-            Prenom,
-            Telephone,
-            Pays,
-            Ville,
-            Rue,
-            CodePostal,
+            num_client,
+            nom,
+            prenom,
+            telephone,
+            pays,
+            ville,
+            rue,
+            code_postal,
         ) in db.cursor:
             data.append(
                 [
-                    str(NumClient),
-                    Nom,
-                    Prenom,
-                    str(int(Telephone)),
-                    Pays,
-                    Ville,
-                    Rue,
-                    str(int(CodePostal)),
+                    str(num_client),
+                    nom,
+                    prenom,
+                    str(int(telephone)),
+                    pays,
+                    ville,
+                    rue,
+                    str(int(code_postal)),
                 ]
             )
         utils.print_data(titles, data)
+
+
+def view_clients():
+    db = Database()
+    db.cursor.execute("select * from INFO_CLIENT;")
+    clients = db.cursor.fetchall()
+    print(clients)
+    print("Clients: ")
+    utils.print_data(
+        [
+            "Numéro",
+            "Nom",
+            "Prénom",
+            "Téléphone",
+            "Pays",
+            "Ville",
+            "Rue",
+            "Code Postal",
+        ],
+        clients,
+    )
 
 
 def edit_client(num_client):

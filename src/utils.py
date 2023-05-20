@@ -54,13 +54,13 @@ def print_data(titles, data):
     to_print = [titles] + data
     form = ""
     for i in range(len(to_print[0])):
-        form += "{" + str(i) + ":" + str(max_len(to_print, i) + 3) + "}"
+        form += "{" + str(i) + ":" + str(max_len(to_print, i)) + "}\t"
     for val in to_print:
         print(form.format(*val))
 
 
 def max_len(data, index):
-    return max([len(i[index]) for i in data])
+    return max([len(str(i[index])) for i in data])
 
 
 @retry(ValueError)
