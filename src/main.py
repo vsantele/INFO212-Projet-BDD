@@ -106,7 +106,7 @@ def view_client(num_client):
             "select * from INFO_CLIENT where NumClient = %s;", [num_client]
         )
     except Exception:
-        print("Erreur lors de l'affichage")
+        print("Erreur lors de l'affichage du client")
     else:
         titles = [
             "Numéro Client",
@@ -125,22 +125,25 @@ def view_client(num_client):
 
 def view_clients():
     db = Database()
-    db.cursor.execute("select * from INFO_CLIENT;")
-    clients = db.cursor.fetchall()
-    print("Clients: ")
-    utils.print_data(
-        [
-            "Numéro Client",
-            "Nom",
-            "Prénom",
-            "Téléphone",
-            "Pays",
-            "Ville",
-            "Rue",
-            "Code Postal",
-        ],
-        clients,
-    )
+    try:
+        db.cursor.execute("select * from INFO_CLIENT;")
+        clients = db.cursor.fetchall()
+        print("Clients: ")
+        utils.print_data(
+            [
+                "Numéro Client",
+                "Nom",
+                "Prénom",
+                "Téléphone",
+                "Pays",
+                "Ville",
+                "Rue",
+                "Code Postal",
+            ],
+            clients,
+        )
+    except Exception:
+        print("Erreur lors de l'affichage des clients")
 
 
 def edit_client(num_client):
