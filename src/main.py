@@ -36,6 +36,8 @@ def main():
                         elif client_choice == utils.Client_choices.DELETE_CLI.value:
                             is_deleted = delete_client(num_client)
                         elif client_choice == utils.Client_choices.ADD_BUY.value:
+                            view_sons()
+                            view_albums()
                             make_purchase(num_client)
                         elif client_choice == utils.Client_choices.SEE_INVOICE.value:
                             see_invoice(num_client)
@@ -144,6 +146,51 @@ def view_clients():
         )
     except Exception:
         print("Erreur lors de l'affichage des clients")
+
+
+def view_sons():
+    db = Database()
+    try:
+        db.cursor.execute(
+            "select d.IdDisque, s.Titre, s.Genre1, s.Genre2, s.Genre3, s.Genre4, s.Genre5, d.PrixVente from DISQUESINGLE ds JOIN SON s ON s.NumSon = ds.Son JOIN DISQUE d ON d.IdDisque = ds.Disque;"
+        )
+        disques = db.cursor.fetchall()
+        disques = [(d[0], d[1], ", ".join(filter(None, d[-5:-1])), d[7]) for d in disques]  # type: ignore
+        print("Disques singles: ")
+        utils.print_data(
+            [
+                "Numéro",
+                "Titre",
+                "Genres",
+                "Prix vente",
+            ],
+            disques,
+        )
+    except Exception as e:
+        print(e)
+        print("Erreur lors de l'affichage des disques")
+
+
+def view_albums():
+    db = Database()
+    try:
+        db.cursor.execute(
+            "select d.IdDisque, a.Titre, a.Genre1, a.Genre2, a.Genre3, a.Genre4, a.Genre5, d.PrixVente from DISQUEALBUM ds JOIN ALBUM a ON a.NumAlbum = ds.Album JOIN DISQUE d ON d.IdDisque = ds.Disque;"
+        )
+        disques = db.cursor.fetchall()
+        disques = [(d[0], d[1], ", ".join(filter(None, d[-5:-1])), d[7]) for d in disques]  # type: ignore
+        print("Disques albums: ")
+        utils.print_data(
+            [
+                "Numéro",
+                "Titre",
+                "Genres",
+                "Prix vente",
+            ],
+            disques,
+        )
+    except Exception:
+        print("Erreur lors de l'affichage des disques")
 
 
 def edit_client(num_client):
