@@ -15,17 +15,9 @@
 use CLICOM;
 
 
--- Drop Tables
--- ___________
-
-drop table if exists `ADRESSE`, `ALBUM`, `APPARTIENT`, `ARTISTE`, `CLIENT`, `COMMANDE`,
-`CONTENU`, `DISQUE`, `DISQUEALBUM`, `DISQUESINGLE`, `EMPLOYE`, `FOURNISSEUR`, `GERANT`,
-`INTERPRETE`, `MAGASIN`, `PERSONNE`, `PRODUCTEUR`, `PRODUIT`, `SON`, `STOCK`, `VENTE`;
-
-
 -- Tables Section
 -- ______________
-
+drop table if exists `ADRESSE`;
 create table ADRESSE (
      IdAdresse int not null auto_increment,
      Rue char(30) not null,
@@ -34,6 +26,7 @@ create table ADRESSE (
      Pays char(30) not null,
      constraint ID_ADRESSE_ID primary key (IdAdresse));
 
+drop table if exists `MAGASIN`;
 create table MAGASIN (
      IdMagasin numeric(6) not null,
      Nom char(30) not null,
@@ -42,6 +35,7 @@ create table MAGASIN (
      constraint ID_MAGASIN_ID primary key (IdMagasin),
      foreign key (Adresse) references ADRESSE(IdAdresse) on delete no action on update cascade);
 
+drop table if exists `ARTISTE`;
 create table ARTISTE (
      IdArtiste char(30) not null,
      NomArtiste char(30) not null,
@@ -50,6 +44,7 @@ create table ARTISTE (
      constraint ID_ARTISTE_ID primary key (IdArtiste),
      foreign key (Groupe) references ARTISTE(IdArtiste) on delete no action on update cascade);
 
+drop table if exists `ALBUM`;
 create table ALBUM (
      NumAlbum numeric(10) not null,
      Titre char(30) not null,
@@ -62,6 +57,7 @@ create table ALBUM (
      constraint ID_ALBUM_ID primary key (NumAlbum),
      foreign key (Artiste) references ARTISTE(IdArtiste) on delete no action on update cascade);
 
+drop table if exists `SON`;
 create table SON (
      NumSon numeric(10) not null,
      Titre char(30) not null,
@@ -75,6 +71,7 @@ create table SON (
      constraint ID_SON_ID primary key (NumSon),
      foreign key (Remix_) references SON(NumSon) on delete no action on update cascade);
 
+drop table if exists `APPARTIENT`;
 create table APPARTIENT (
      Album numeric(10) not null,
      Son numeric(10) not null,
@@ -82,6 +79,7 @@ create table APPARTIENT (
      foreign key (Son) references SON(NumSon) on delete no action on update cascade,
      foreign key (Album) references ALBUM(NumAlbum) on delete no action on update cascade);
 
+drop table if exists `PERSONNE`;
 create table PERSONNE (
      IdPersonne int not null auto_increment,
      Nom char(30) not null,
@@ -91,6 +89,7 @@ create table PERSONNE (
      constraint ID_PERSONNE_ID primary key (IdPersonne),
      foreign key (Adresse) references ADRESSE(IdAdresse) on delete no action on update cascade);
 
+drop table if exists `CLIENT`;
 create table CLIENT (
      NumClient int not null auto_increment,
      Personne int not null,
@@ -98,11 +97,13 @@ create table CLIENT (
      constraint SID_CLIEN_PERSO_ID unique (Personne),
      foreign key (Personne) references PERSONNE(IdPersonne) on delete no action on update cascade);
 
+drop table if exists `FOURNISSEUR`;
 create table FOURNISSEUR (
      IdFournisseur char(30) not null,
      Nom char(30) not null,
      constraint ID_FOURNISSEUR_ID primary key (IdFournisseur));
 
+drop table if exists `COMMANDE`;
 create table COMMANDE (
      IdCommande int not null auto_increment,
      Datelivraison date,
@@ -114,20 +115,7 @@ create table COMMANDE (
      check (Quantite >= 0),
      check (DateCommande < Datelivraison));
 
-create table DISQUEALBUM (
-     Disque char(30) not null,
-     Album numeric(10) not null,
-     constraint ID_DISQU_DISQU_1_ID primary key (Disque),
-     constraint SID_DISQU_ALBUM_ID unique (Album),
-     foreign key (Album) references ALBUM(NumAlbum) on delete no action on update cascade);
-
-create table DISQUESINGLE (
-     Disque char(30) not null,
-     Son numeric(10) not null,
-     constraint ID_DISQU_DISQU_ID primary key (Disque),
-     constraint SID_DISQU_SON_ID unique (Son),
-     foreign key (Son) references SON(NumSon) on delete no action on update cascade);
-
+drop table if exists `DISQUE`;
 create table DISQUE (
      IdDisque char(30) not null,
      PrixVente numeric(10,4) not null,
@@ -140,6 +128,23 @@ create table DISQUE (
      check (PrixAchat > 0),
      check (PrixVente > 0));
 
+drop table if exists `DISQUEALBUM`;
+create table DISQUEALBUM (
+     Disque char(30) not null,
+     Album numeric(10) not null,
+     constraint ID_DISQU_DISQU_1_ID primary key (Disque),
+     constraint SID_DISQU_ALBUM_ID unique (Album),
+     foreign key (Album) references ALBUM(NumAlbum) on delete no action on update cascade);
+
+drop table if exists `DISQUESINGLE`;
+create table DISQUESINGLE (
+     Disque char(30) not null,
+     Son numeric(10) not null,
+     constraint ID_DISQU_DISQU_ID primary key (Disque),
+     constraint SID_DISQU_SON_ID unique (Son),
+     foreign key (Son) references SON(NumSon) on delete no action on update cascade);
+
+drop table if exists `CONTENU`;
 create table CONTENU (
      Commande int not null,
      Disque char(30) not null,
@@ -147,6 +152,7 @@ create table CONTENU (
      foreign key (Disque) references DISQUE(IdDisque) on delete no action on update cascade,
      foreign key (Commande) references COMMANDE(IdCommande) on delete no action on update cascade);
 
+drop table if exists `EMPLOYE`;
 create table EMPLOYE (
      Personne int not null,
      Email char(50) not null,
@@ -157,6 +163,7 @@ create table EMPLOYE (
      foreign key (Personne) references PERSONNE(IdPersonne) on delete no action on update cascade,
      check (Salaire > 0));
 
+drop table if exists `GERANT`;
 create table GERANT (
      Employe int not null,
      Magasin numeric(6) not null,
@@ -166,6 +173,7 @@ create table GERANT (
      foreign key (Magasin) references MAGASIN(IdMagasin) on delete no action on update cascade,
      foreign key (Employe) references EMPLOYE(Personne) on delete no action on update cascade);
 
+drop table if exists `INTERPRETE`;
 create table INTERPRETE (
      Artiste char(30) not null,
      Son numeric(10) not null,
@@ -173,11 +181,13 @@ create table INTERPRETE (
      foreign key (Son) references SON(NumSon) on delete no action on update cascade,
      foreign key (Artiste) references ARTISTE(IdArtiste) on delete no action on update cascade);
 
+drop table if exists `PRODUCTEUR`;
 create table PRODUCTEUR (
      Artiste char(30) not null,
      constraint ID_PRODU_ARTIS_ID primary key (Artiste),
      foreign key (Artiste) references ARTISTE(IdArtiste) on delete no action on update cascade);
 
+drop table if exists `PRODUIT`;
 create table PRODUIT (
      Producteur char(30) not null,
      Son numeric(10) not null,
@@ -185,6 +195,7 @@ create table PRODUIT (
      foreign key (Son) references SON(NumSon) on delete no action on update cascade,
      foreign key (Producteur) references PRODUCTEUR(Artiste) on delete no action on update cascade);
 
+drop table if exists `STOCK`;
 create table STOCK (
      Disque char(30) not null,
      Magasin numeric(6) not null,
@@ -194,6 +205,7 @@ create table STOCK (
      foreign key (Disque) references DISQUE(IdDisque) on delete no action on update cascade,
      check (Quantite >= 0));
 
+drop table if exists `VENTE`;
 create table VENTE (
      Numero int not null auto_increment,
      Quantite numeric(10) not null,
