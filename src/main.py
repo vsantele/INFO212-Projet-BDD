@@ -118,30 +118,9 @@ def view_client(num_client):
             "Rue",
             "Code Postal",
         ]
-        data = []
-        for (
-            num_client,
-            nom,
-            prenom,
-            telephone,
-            pays,
-            ville,
-            rue,
-            code_postal,
-        ) in db.cursor:
-            data.append(
-                [
-                    str(num_client),
-                    nom,
-                    prenom,
-                    str(int(telephone)),
-                    pays,
-                    ville,
-                    rue,
-                    str(int(code_postal)),
-                ]
-            )
-        utils.print_data(titles, data)
+        data = db.cursor.fetchone()
+
+        utils.print_data(titles, [data])
 
 
 def view_clients():
@@ -151,7 +130,7 @@ def view_clients():
     print("Clients: ")
     utils.print_data(
         [
-            "Numéro",
+            "Numéro Client",
             "Nom",
             "Prénom",
             "Téléphone",
