@@ -8,7 +8,14 @@
 -- * Schema: Projet_DB/SQL
 -- *********************************************
 
+-- SETTING
+-- _______
+-- use utf8mb4 collate utf8mb4_unicode_ci;
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+SET character_set_connection = utf8mb4;
 SET GLOBAL log_bin_trust_function_creators = 1;
+
 -- Database Section
 -- ________________
 
