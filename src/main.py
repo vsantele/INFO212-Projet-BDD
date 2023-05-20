@@ -8,53 +8,81 @@ def main():
     except Exception:
         print("Impossible de se connecter à la base de données")
     else:
+        view_shops()
+        num_shop = utils.get_num("magasin")
+        print()
         utils.print_user_menu()
         user_choice = utils.get_choice(
             utils.User_choices.ADD_CLI.value, utils.User_choices.QUIT.value
         )
         while user_choice != utils.User_choices.QUIT.value:
-            view_clients()
             if user_choice == utils.User_choices.ADD_CLI.value:
                 add_client()
             elif user_choice == utils.User_choices.CLIENT.value:
+                view_clients()
                 connected, num_client = connect_client()
                 if connected:
                     utils.print_client_menu()
                     client_choice = utils.get_choice(
-                        utils.Client_choices.VIEW_CLI.value,
-                        utils.Client_choices.QUIT.value,
+                        utils.ClientChoices.VIEW_CLI.value,
+                        utils.ClientChoices.QUIT.value,
                     )
                     is_deleted = False
                     while (
                         not is_deleted
-                        and client_choice != utils.Client_choices.QUIT.value
+                        and client_choice != utils.ClientChoices.QUIT.value
                     ):
-                        if client_choice == utils.Client_choices.VIEW_CLI.value:
+                        if client_choice == utils.ClientChoices.VIEW_CLI.value:
                             view_client(num_client)
-                        elif client_choice == utils.Client_choices.EDI_CLI.value:
+                        elif client_choice == utils.ClientChoices.EDI_CLI.value:
                             edit_client(num_client)
-                        elif client_choice == utils.Client_choices.DELETE_CLI.value:
+                        elif client_choice == utils.ClientChoices.DELETE_CLI.value:
                             is_deleted = delete_client(num_client)
-                        elif client_choice == utils.Client_choices.ADD_BUY.value:
+                        elif client_choice == utils.ClientChoices.ADD_BUY.value:
                             view_sons()
                             view_albums()
                             make_purchase(num_client)
-                        elif client_choice == utils.Client_choices.SEE_INVOICE.value:
+                        elif client_choice == utils.ClientChoices.SEE_INVOICE.value:
                             see_invoice(num_client)
                         else:
                             see_purchases(num_client)
                         if not is_deleted:
                             utils.print_client_menu()
                             client_choice = utils.get_choice(
-                                utils.Client_choices.VIEW_CLI.value,
-                                utils.Client_choices.QUIT.value,
+                                utils.ClientChoices.VIEW_CLI.value,
+                                utils.ClientChoices.QUIT.value,
                             )
             elif user_choice == utils.User_choices.COMPTA.value:
                 print("Service compta")
+            elif user_choice == utils.User_choices.VENDEUR.value:
+                view_sellers(num_shop)
+                connected, num_vendeur = connect_vendeur()
+                if connected:
+                    utils.print_vendeur_menu()
+                    vendeur_choice = utils.get_choice(
+                        utils.VendeurChoices.MAKE_SELL.value,
+                        utils.VendeurChoices.QUIT.value,
+                    )
+                    while vendeur_choice != utils.VendeurChoices.QUIT.value:
+                        if vendeur_choice == utils.VendeurChoices.MAKE_SELL.value:
+                            view_sons()
+                            view_albums()
+                            make_sale(num_vendeur)
+                        elif vendeur_choice == utils.VendeurChoices.SHOW_INVOICE:
+                            view_invoice(num_vendeur)
+                        elif vendeur_choice == utils.VendeurChoices.SHOW_SELLS:
+                            view_sells(num_vendeur)
+                        utils.print_vendeur_menu()
+                        vendeur_choice = utils.get_choice(
+                            utils.VendeurChoices.MAKE_SELL.value,
+                            utils.VendeurChoices.QUIT.value,
+                        )
+                print("Vendeur")
             utils.print_user_menu()
             user_choice = utils.get_choice(
                 utils.User_choices.ADD_CLI.value, utils.User_choices.QUIT.value
             )
+
         db.close()
 
 
@@ -86,7 +114,7 @@ def add_client():
 
 def connect_client():
     db = Database()
-    num_client = utils.get_num_client()
+    num_client = utils.get_num("client")
     try:
         db.cursor.execute("select * from CLIENT where NumClient = %s", [num_client])
     except:
@@ -99,6 +127,23 @@ def connect_client():
         else:
             print("Connecté")
             return (True, num_client)
+
+
+def connect_vendeur():
+    db = Database()
+    num_vendeur = utils.get_num("vendeur")
+    try:
+        db.cursor.execute("select * from EMPLOYE  where Personne = %s", [num_vendeur])
+    except:
+        print("Erreur lors de la connection")
+        return (False, 0)
+    else:
+        if len(list(db.cursor)) == 0:
+            print("Numéro client invalide")
+            return (False, 0)
+        else:
+            print("Connecté")
+            return (True, num_vendeur)
 
 
 def view_client(num_client):
@@ -143,6 +188,46 @@ def view_clients():
                 "Code Postal",
             ],
             clients,
+        )
+    except Exception:
+        print("Erreur lors de l'affichage des clients")
+
+
+def view_shops():
+    db = Database()
+    try:
+        db.cursor.execute(
+            "select m.IdMagasin, m.Nom, a.Rue, a.CodePostal, a.Ville, a.Pays  from MAGASIN m JOIN ADRESSE a ON m.Adresse = a.IdAdresse;"
+        )
+        magasins = db.cursor.fetchall()
+        print("Magasins: ")
+        utils.print_data(
+            [
+                "Numéro Magasin",
+                "Nom",
+                "Rue",
+                "Code Postal",
+                "Ville",
+                "Pays",
+            ],
+            magasins,
+        )
+    except Exception:
+        print("Erreur lors de l'affichage des magasins")
+
+
+def view_sellers(num_shop):
+    db = Database()
+    try:
+        db.cursor.execute(
+            "select p.IdPersonne, p.Nom, p.Prenom  from EMPLOYE e JOIN PERSONNE p ON p.PersonneId = e.Personne WHERE e.Magasin = %s;",
+            [num_shop],
+        )
+        sellers = db.cursor.fetchall()
+        print("Clients: ")
+        utils.print_data(
+            ["Numéro Vendeur", "Nom", "Prénom"],
+            sellers,
         )
     except Exception:
         print("Erreur lors de l'affichage des clients")
@@ -373,7 +458,7 @@ def see_purchases(num_client):
     db = Database()
     try:
         db.cursor.execute(
-            "SELECT Numero, Quantite, DateAchat, Disque FROM vente WHERE Client = %s;",
+            "SELECT Numero, Quantite, DateAchat, Disque FROM VENTE WHERE Client = %s;",
             [num_client],
         )
     except:

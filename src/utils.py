@@ -7,12 +7,13 @@ from datetime import date
 
 class User_choices(Enum):
     ADD_CLI = 1
-    CLIENT = 2
-    COMPTA = 3
-    QUIT = 4
+    VENDEUR = 2
+    CLIENT = 3
+    COMPTA = 4
+    QUIT = 5
 
 
-class Client_choices(Enum):
+class ClientChoices(Enum):
     VIEW_CLI = 1
     EDI_CLI = 2
     DELETE_CLI = 3
@@ -20,6 +21,13 @@ class Client_choices(Enum):
     SEE_INVOICE = 5
     SEE_PURCHASES = 6
     QUIT = 7
+
+
+class VendeurChoices(Enum):
+    MAKE_SELL = 1
+    SHOW_INVOICE = 2
+    SHOW_SELLS = 3
+    QUIT = 4
 
 
 COUNTRIES = [country.name for country in Countries()]
@@ -30,9 +38,10 @@ def print_user_menu():
     print("║        USER        ║")
     print("╠════════════════════╣")
     print("║ 1 - Ajouter client ║")
-    print("║ 2 - Client         ║")
-    print("║ 3 - Servive compta ║")
-    print("║ 4 - Quitter        ║")
+    print("║ 2 - Vendeur        ║")
+    print("║ 3 - Client         ║")
+    print("║ 4 - Servive compta ║")
+    print("║ 5 - Quitter        ║")
     print("╚════════════════════╝")
 
 
@@ -47,6 +56,17 @@ def print_client_menu():
     print("║ 5 - Afficher facture             ║")
     print("║ 6 - Afficher vos achats          ║")
     print("║ 7 - Quitter                      ║")
+    print("╚══════════════════════════════════╝")
+
+
+def print_vendeur_menu():
+    print("╔══════════════════════════════════╗")
+    print("║               MENU               ║")
+    print("╠══════════════════════════════════╣")
+    print("║ 1 - Effectuer une vente          ║")
+    print("║ 2 - Afficher facture             ║")
+    print("║ 3 - Afficher vos ventes          ║")
+    print("║ 4 - Quitter                      ║")
     print("╚══════════════════════════════════╝")
 
 
@@ -100,8 +120,8 @@ def get_postal_code():
 
 
 @retry(ValueError)
-def get_num_client():
-    num_client = int(input("Entrez votre numéro client : "))
+def get_num(type):
+    num_client = int(input("Entrez votre numéro " + type + "  : "))
     if num_client <= 0:
         raise ValueError
     else:
