@@ -148,7 +148,6 @@ def view_clients():
     db = Database()
     db.cursor.execute("select * from INFO_CLIENT;")
     clients = db.cursor.fetchall()
-    print(clients)
     print("Clients: ")
     utils.print_data(
         [
