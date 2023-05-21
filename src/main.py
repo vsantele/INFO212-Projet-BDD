@@ -55,12 +55,11 @@ def main():
                 num_manager = utils.get_manager_db(num_shop)
                 utils.print_compta_menu()
                 manager_choice = utils.get_choice(
-                    utils.ComptaChoices.SHOW_SELLS.value, utils.ComptaChoices.QUIT.value
+                    utils.ComptaChoices.SHOW_ORDERS.value,
+                    utils.ComptaChoices.QUIT.value,
                 )
                 while manager_choice != utils.ComptaChoices.QUIT.value:
-                    if manager_choice == utils.ComptaChoices.SHOW_SELLS.value:
-                        view_sells(num_shop)
-                    elif manager_choice == utils.ComptaChoices.SHOW_ORDERS.value:
+                    if manager_choice == utils.ComptaChoices.SHOW_ORDERS.value:
                         view_orders(num_shop)
                     elif manager_choice == utils.ComptaChoices.SHOW_RAPPORT.value:
                         view_annual_rapport(num_shop)
@@ -68,7 +67,7 @@ def main():
                         view_monthly_rapport(num_shop)
                     utils.print_compta_menu()
                     manager_choice = utils.get_choice(
-                        utils.ComptaChoices.SHOW_SELLS.value,
+                        utils.ComptaChoices.SHOW_ORDERS.value,
                         utils.ComptaChoices.QUIT.value,
                     )
             utils.print_user_menu()
@@ -484,7 +483,11 @@ def see_purchases(num_client):
     except:
         print("Erreur lors de l'affichage des achats.")
     else:
-        titles = ["Quantité", "Date d'Achat", "ID Disque"]
+        titles = [
+            "ID Disque",
+            "Quantité",
+            "Date d'Achat",
+        ]
         data = []
         for Quantite, DateAchat, IdDisque in db.cursor:
             data.append([str(IdDisque), str(Quantite), str(DateAchat)])
@@ -494,22 +497,24 @@ def see_purchases(num_client):
             utils.print_data(titles, data)
 
 
-def view_sells(num_shop):
-    db = Database()
-    date_invoice = utils.get_date()
-    db.cursor.execute(
-        "select * from FACTURE where DateAchat = %s and IdMagasin = %s;",
-        [str(date_invoice), num_shop],
-    )
-
-
 def view_orders(num_shop):
     db = Database()
     db.cursor.execute(
         "select Magasin, Disque, Quantite, DateLivraison, DateCommande, Fournisseur from INFO_COMMANDE where Magasin = %s;",
         [num_shop],
     )
-    orders = db.cursor.fetchall()
+    orders = []
+    for row in db.cursor:
+        orders.append(
+            [
+                str(row[0]),
+                str(row[1]),
+                str(row[2]),
+                str(row[3]),
+                str(row[4]),
+                str(row[5]),
+            ]
+        )
     utils.print_data(
         [
             "Magasin",

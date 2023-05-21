@@ -23,11 +23,10 @@ class ClientChoices(Enum):
 
 
 class ComptaChoices(Enum):
-    SHOW_SELLS = 1
-    SHOW_ORDERS = 2
-    SHOW_RAPPORT = 3
-    SHOW_MONTH_RAPPORT = 4
-    QUIT = 5
+    SHOW_ORDERS = 1
+    SHOW_RAPPORT = 2
+    SHOW_MONTH_RAPPORT = 3
+    QUIT = 4
 
 
 COUNTRIES = [country.name for country in Countries()]
@@ -62,11 +61,10 @@ def print_compta_menu():
     print("╔══════════════════════════════════╗")
     print("║               MENU               ║")
     print("╠══════════════════════════════════╣")
-    print("║ 1 - Afficher ventes              ║")
-    print("║ 2 - Afficher commandes           ║")
-    print("║ 3 - Afficher rapport annuel      ║")
-    print("║ 4 - Afficher rapport mensuel     ║")
-    print("║ 5 - Quitter                      ║")
+    print("║ 1 - Afficher commandes           ║")
+    print("║ 2 - Afficher rapport annuel      ║")
+    print("║ 3 - Afficher rapport mensuel     ║")
+    print("║ 4 - Quitter                      ║")
     print("╚══════════════════════════════════╝")
 
 
