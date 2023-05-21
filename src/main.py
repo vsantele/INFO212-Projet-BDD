@@ -9,7 +9,7 @@ def main():
         print("Impossible de se connecter à la base de données")
     else:
         view_shops()
-        num_shop = utils.get_num("magasin")
+        num_shop = utils.get_shop_db(db)
         print()
         utils.print_user_menu()
         user_choice = utils.get_choice(
@@ -39,8 +39,8 @@ def main():
                         elif client_choice == utils.ClientChoices.DELETE_CLI.value:
                             is_deleted = delete_client(num_client)
                         elif client_choice == utils.ClientChoices.ADD_BUY.value:
-                            view_sons()
-                            view_albums()
+                            view_sons(num_shop)
+                            view_albums(num_shop)
                             make_purchase(num_client)
                         elif client_choice == utils.ClientChoices.SEE_INVOICE.value:
                             see_invoice(num_client)
@@ -67,7 +67,7 @@ def main():
                         if vendeur_choice == utils.VendeurChoices.MAKE_SELL.value:
                             view_sons(num_shop)
                             view_albums(num_shop)
-                            make_sale(num_vendeur)
+                            make_sale(num_shop, num_vendeur)
                         elif vendeur_choice == utils.VendeurChoices.SHOW_INVOICE:
                             view_invoice(num_vendeur)
                         elif vendeur_choice == utils.VendeurChoices.SHOW_SELLS:
@@ -77,7 +77,6 @@ def main():
                             utils.VendeurChoices.MAKE_SELL.value,
                             utils.VendeurChoices.QUIT.value,
                         )
-                print("Vendeur")
             utils.print_user_menu()
             user_choice = utils.get_choice(
                 utils.User_choices.ADD_CLI.value, utils.User_choices.QUIT.value
@@ -237,11 +236,11 @@ def view_sons(num_shop):
     db = Database()
     try:
         db.cursor.execute(
-            "select d.IdDisque, s.Titre, s.Genre1, s.Genre2, s.Genre3, s.Genre4, s.Genre5, d.PrixVente from DISQUESINGLE ds JOIN SON s ON s.NumSon = ds.Son JOIN DISQUE d ON d.IdDisque = ds.Disque JOIN STOCK st on st.Disque = d.IdDisque WHERE st.Magasin = %s AND st.Quantite > 0;",
+            "select d.IdDisque, s.Titre, s.Genre1, s.Genre2, s.Genre3, s.Genre4, s.Genre5, d.PrixVente, st.Quantite from DISQUESINGLE ds JOIN SON s ON s.NumSon = ds.Son JOIN DISQUE d ON d.IdDisque = ds.Disque JOIN STOCK st on st.Disque = d.IdDisque WHERE st.Magasin = %s AND st.Quantite > 0;",
             [num_shop],
         )
         disques = db.cursor.fetchall()
-        disques = [(d[0], d[1], ", ".join(filter(None, d[-5:-1])), d[7]) for d in disques]  # type: ignore
+        disques = [(d[0], d[1], ", ".join(filter(None, d[-6:-2])), d[7], d[8]) for d in disques]  # type: ignore
         print("Disques singles: ")
         utils.print_data(
             [
@@ -249,11 +248,11 @@ def view_sons(num_shop):
                 "Titre",
                 "Genres",
                 "Prix vente",
+                "Quantité",
             ],
             disques,
         )
-    except Exception as e:
-        print(e)
+    except Exception:
         print("Erreur lors de l'affichage des disques")
 
 
@@ -261,10 +260,11 @@ def view_albums(num_shop):
     db = Database()
     try:
         db.cursor.execute(
-            "select d.IdDisque, a.Titre, a.Genre1, a.Genre2, a.Genre3, a.Genre4, a.Genre5, d.PrixVente from DISQUEALBUM da JOIN ALBUM a ON a.NumAlbum = da.Album JOIN DISQUE d ON d.IdDisque = ds.Disque JOIN STOCK st on st.Disque = d.IdDisque WHERE st.Magasin = %s AND st.Quantite > 0;"
+            "select d.IdDisque, a.Titre, a.Genre1, a.Genre2, a.Genre3, a.Genre4, a.Genre5, d.PrixVente, st.Quantite from DISQUEALBUM da JOIN ALBUM a ON a.NumAlbum = da.Album JOIN DISQUE d ON d.IdDisque = da.Disque JOIN STOCK st on st.Disque = d.IdDisque WHERE st.Magasin = %s AND st.Quantite > 0;",
+            [num_shop],
         )
         disques = db.cursor.fetchall()
-        disques = [(d[0], d[1], ", ".join(filter(None, d[-5:-1])), d[7]) for d in disques]  # type: ignore
+        disques = [(d[0], d[1], ", ".join(filter(None, d[-6:-2])), d[7], d[8]) for d in disques]  # type: ignore
         print("Disques albums: ")
         utils.print_data(
             [
@@ -272,6 +272,7 @@ def view_albums(num_shop):
                 "Titre",
                 "Genres",
                 "Prix vente",
+                "Quantité",
             ],
             disques,
         )
@@ -357,12 +358,30 @@ def edit_client(num_client):
 def make_purchase(num_client):
     db = Database()
     disque = utils.get_disque_db(db)
-    quantite = utils.get_quantite()
+    quantite = utils.get_quantite(disque)
     id_employe = utils.get_employe_db(db)
     try:
         db.cursor.execute(
             "insert into VENTE(Quantite, DateAchat, Disque, Client, Employe) values(%s, curdate(), %s, %s, %s)",
             [quantite, disque, num_client, id_employe],
+        )
+        db.connection.commit()
+    except:
+        print("Erreur lors de l'achat")
+    else:
+        print("Achat effectué")
+
+
+def make_sale(num_shop, num_seller):
+    db = Database()
+    disque = utils.get_disque_db(db)
+    quantite = utils.get_quantite(disque)
+    view_clients()
+    num_client = utils.get_client_db(db)
+    try:
+        db.cursor.execute(
+            "insert into VENTE(Quantite, DateAchat, Disque, Client, Employe) values(%s, curdate(), %s, %s, %s)",
+            [quantite, disque, num_client, num_seller],
         )
         db.connection.commit()
     except:

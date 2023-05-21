@@ -121,7 +121,7 @@ def get_postal_code():
 
 @retry(ValueError)
 def get_num(type):
-    num_client = int(input("Entrez votre numéro " + type + "  : "))
+    num_client = int(input("Entrez le numéro " + type + "  : "))
     if num_client <= 0:
         raise ValueError
     else:
@@ -129,9 +129,16 @@ def get_num(type):
 
 
 @retry(ValueError)
-def get_quantite():
+def get_quantite(disque):
+    db = Database()
     quantite = int(input("Entrez la quantité désirée : "))
     if quantite <= 0:
+        raise ValueError
+    db.cursor.execute("select s.Quantite from STOCK s where Disque = %s;", [disque])
+    quantite_db = db.cursor.fetchone()
+    print(disque, quantite_db, quantite)
+    if quantite_db is None or quantite > int(quantite_db[0]):  # type: ignore
+        print("Il n'y a pas assez de stock")
         raise ValueError
     else:
         return quantite
@@ -150,15 +157,35 @@ def get_disque_db(db):
 
 @retry(ValueError)
 def get_employe_db(db):
-    id_employe = int(
-        input("Entrez l'identifiant de l'employé qui a effectué la vente : ")
-    )
+    id_employe = int(input("Entrez l'identifiant de l'employé: "))
     db.cursor.execute("select * from EMPLOYE where Personne = %s;", [id_employe])
     employe_db = [i for i in db.cursor]
     if len(employe_db) == 0:
         raise ValueError
     else:
         return id_employe
+
+
+@retry(ValueError)
+def get_shop_db(db):
+    id_shop = get_num("magasin")
+    db.cursor.execute("select * from MAGASIN where IdMagasin = %s;", [id_shop])
+    shop_db = [i for i in db.cursor]
+    if len(shop_db) == 0:
+        raise ValueError
+    else:
+        return id_shop
+
+
+@retry(ValueError)
+def get_client_db(db):
+    id_client = int(input("Entrez l'identifiant du client: "))
+    db.cursor.execute("select * from CLIENT where NumClient = %s;", [id_client])
+    client_db = [i for i in db.cursor]
+    if len(client_db) == 0:
+        raise ValueError
+    else:
+        return id_client
 
 
 @retry(ValueError)
