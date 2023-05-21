@@ -304,7 +304,7 @@ drop trigger if exists TRG_MAKE_ORDER;
 
 delimiter //
 create trigger TRG_MAKE_ORDER
-before update on STOCK for each row
+before insert or update on STOCK for each row
 begin
 	declare NbDisques integer;
 	if new.Quantite < 2 then
@@ -312,7 +312,7 @@ begin
 		select COUNT(*) into NbDisques from CONTENU con join COMMANDE com ON com.IdCommande = con.Commande where con.Disque = new.Disque AND com.DateLivraison > curdate();
           -- Si pas de commande en cours, on en crée une
           if NbDisques = 0 then
-                    insert into COMMANDE(DateCommande, Quantite, Fournisseur) values(curdate(), 10, 'FOUDB01');
+                    insert into COMMANDE(DateCommande, Datelivaison, Quantite, Fournisseur) values(curdate(), curdate() + 5, 10, 'FOUDB01');
                     insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
           end if;
           set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
@@ -320,22 +320,6 @@ begin
 end//
 delimiter ;
 
-drop trigger if exists TRG_INSERT_STOCK;
-delimiter //
-create trigger TRG_INSERT_STOCK
-before insert on STOCK for each row
-begin
-	declare I integer;
-	if new.Quantite < 2 then
-		select COUNT(*) into I from CONTENU where Disque = new.Disque;
-        if I = 0 then
-			insert into COMMANDE(DateCommande, Datelivraison, Quantite, Fournisseur, Magasin) values(curdate(),curdate()+5, 10, 'FOUDB01', new.Magasin);
-			insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
-        end if;
-        set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
-    end if;
-end//
-delimiter ;
 
 -- drop trigger if exists trg_disque_update_album_single;
 -- delimiter //
