@@ -220,17 +220,17 @@ def view_sellers(num_shop):
     db = Database()
     try:
         db.cursor.execute(
-            "select p.IdPersonne, p.Nom, p.Prenom  from EMPLOYE e JOIN PERSONNE p ON p.PersonneId = e.Personne WHERE e.Magasin = %s;",
+            "select p.IdPersonne, p.Nom, p.Prenom  from EMPLOYE e JOIN PERSONNE p ON p.IdPersonne = e.Personne WHERE e.Magasin = %s;",
             [num_shop],
         )
         sellers = db.cursor.fetchall()
         print("Clients: ")
         utils.print_data(
-            ["Numéro Vendeur", "Nom", "Prénom"],
+            ["Numéro", "Nom", "Prénom"],
             sellers,
         )
     except Exception:
-        print("Erreur lors de l'affichage des clients")
+        print("Erreur lors de l'affichage des vendeurs")
 
 
 def view_sons():
