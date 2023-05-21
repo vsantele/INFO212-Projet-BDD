@@ -300,47 +300,69 @@ delimiter ;
 -- Description: Crée une nouvelle commande dès que le stock d'un disque passe en dessous de 2
 -- et qu'il n'y a pas déjà une commande en cours
 
-drop trigger if exists TRG_MAKE_ORDER;
+drop trigger if exists TRG_MAKE_ORDER_INSERT;
 
 delimiter //
-create trigger TRG_MAKE_ORDER
-before insert or update on STOCK for each row
+create trigger TRG_MAKE_ORDER_INSERT
+before insert on STOCK for each row
 begin
 	declare NbDisques integer;
 	if new.Quantite < 2 then
           -- Vérifie si une commande est déjà en cours pour ce disque.
-		select COUNT(*) into NbDisques from CONTENU con join COMMANDE com ON com.IdCommande = con.Commande where con.Disque = new.Disque AND com.DateLivraison > curdate();
+		select COUNT(*) into NbDisques from CONTENU con join COMMANDE com ON com.IdCommande = con.Commande where con.Disque = new.Disque AND com.Datelivraison > curdate();
           -- Si pas de commande en cours, on en crée une
           if NbDisques = 0 then
-                    insert into COMMANDE(DateCommande, Datelivaison, Quantite, Fournisseur) values(curdate(), curdate() + 5, 10, 'FOUDB01');
-                    insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
+               insert into COMMANDE(DateCommande, Datelivraison, Quantite, Fournisseur, Magasin) values(curdate(), curdate() + 5, 10, 'FOUDB01', new.Magasin);
+               insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
+          end if;
+          set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
+    end if;
+end//
+delimiter ;
+drop trigger if exists TRG_MAKE_ORDER_UPDATE;
+
+delimiter //
+create trigger TRG_MAKE_ORDER_INSERT_UPDATE
+before update on STOCK for each row
+begin
+	declare NbDisques integer;
+	if new.Quantite < 2 then
+          -- Vérifie si une commande est déjà en cours pour ce disque.
+		select COUNT(*) into NbDisques from CONTENU con join COMMANDE com ON com.IdCommande = con.Commande where con.Disque = new.Disque AND com.Datelivraison > curdate();
+          -- Si pas de commande en cours, on en crée une
+          if NbDisques = 0 then
+               insert into COMMANDE(DateCommande, Datelivraison, Quantite, Fournisseur, Magasin) values(curdate(), curdate() + 5, 10, 'FOUDB01', new.Magasin);
+               insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
           end if;
           set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
     end if;
 end//
 delimiter ;
 
-
--- drop trigger if exists trg_disque_update_album_single;
--- delimiter //
--- create trigger trg_disque_update_album_single
--- before update on disque
--- for each row
--- begin
--- declare album int;
--- declare single int;
--- select count(*) into album from disque where iddisque <> new.iddisque and disquealbum = new.disquealbum;
--- select count(*) into single from disque where iddisque <> new.iddisque and disquesingle = new.disquesingle;
-
--- if album > 0 and new.disquealbum is not null then
---     signal sqlstate '45000' set message_text = "Les champs 'Album' et 'Single' du disque sont mutuellement exclusifs. Veuillez choisir l'un ou l'autre, mais pas les deux.";
--- end if;
-
--- if single > 0 and new.disquesingle is not null then
---     signal sqlstate '45000' set message_text = "Les champs 'Album' et 'Single' du disque sont mutuellement exclusifs. Veuillez choisir l'un ou l'autre, mais pas les deux.";
--- end if;
--- end//
+drop trigger if exists TRG_STOCK_UPDATE_INSERT;
+delimiter //
+-- Description: Met à jour le stock d'un disque dès qu'une vente est effectuée
+create trigger TRG_STOCK_UPDATE_INSERT
+before insert on VENTE for each row
+begin
+     declare IdMagasin integer;
+     select Magasin into IdMagasin from EMPLOYE e where e.Personne = new.Employe;
+     update STOCK set Quantite = Quantite - NEW.Quantite where Disque = NEW.Disque AND Magasin = IdMagasin;
+end//
 delimiter ;
+
+drop trigger if exists TRG_STOCK_UPDATE_UPDATE;
+delimiter //
+-- Description: Met à jour le stock d'un disque dès qu'une vente est effectuée
+create trigger TRG_STOCK_UPDATE_UPDATE
+before update on VENTE for each row
+begin
+     declare IdMagasin integer;
+     select Magasin into IdMagasin from EMPLOYE e where e.Personne = new.Employe;
+     update STOCK set Quantite = Quantite - (NEW.Quantite - OLD.Quantite) where Disque = NEW.Disque AND Magasin = IdMagasin;
+end//
+delimiter ;
+
 
 drop trigger if exists trg_magasin_delete_with_stock;
 delimiter //
@@ -437,7 +459,7 @@ inner join ADRESSE a on p.Adresse = a.IdAdresse;
 
 drop view if exists INFO_COMMANDE;
 create view INFO_COMMANDE as
-select c.IdCommande, Magasin, t.Disque, c.Quantite, c.DateLivraison, c.DateCommande, f.Nom as Fournisseur
+select c.IdCommande, Magasin, t.Disque, c.Quantite, c.Datelivraison, c.DateCommande, f.Nom as Fournisseur
 from CONTENU t
 inner join COMMANDE c on t.Commande = c.IdCommande
 inner join FOURNISSEUR f on c.Fournisseur = f.IdFournisseur;
