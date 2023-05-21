@@ -321,7 +321,7 @@ begin
 	if new.Quantite < 2 then
 		select COUNT(*) into I from CONTENU where Disque = new.Disque;
         if I = 0 then
-			insert into COMMANDE(DateCommande, Quantite, Fournisseur) values(curdate(), 10, 'FOUDB01');
+			insert into COMMANDE(DateCommande, Datelivraison, Quantite, Fournisseur) values(curdate(),curdate()+5, 10, 'FOUDB01');
 			insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
         end if;
         set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
