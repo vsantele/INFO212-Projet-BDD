@@ -517,11 +517,11 @@ insert into CLIENT values(3, 3);
 insert into FOURNISSEUR values('FOUDB01', 'Scorpion Music');
 insert into FOURNISSEUR values('FOUDB02', 'Anybody Music Group');
 
-insert into COMMANDE values(1, '2023-01-01', '2022-12-01', 2, 'FOUDB01', 12346);
-insert into COMMANDE values(2, '2023-02-01', '2022-12-02', 3, 'FOUDB01', 12346);
-insert into COMMANDE values(3, '2023-03-01', '2022-12-03', 4, 'FOUDB01', 12346);
-insert into COMMANDE values(4, '2023-04-01', '2022-11-04', 5, 'FOUDB01', 12346);
-insert into COMMANDE values(5, '2023-05-01', '2022-11-05', 8, 'FOUDB01', 12346);
+insert into COMMANDE values(1, '2023-01-01', '2022-12-01', 2, 'FOUDB01', 123456);
+insert into COMMANDE values(2, '2023-02-01', '2022-12-02', 3, 'FOUDB01', 123456);
+insert into COMMANDE values(3, '2023-03-01', '2022-12-03', 4, 'FOUDB01', 123456);
+insert into COMMANDE values(4, '2023-04-01', '2022-11-04', 5, 'FOUDB01', 123456);
+insert into COMMANDE values(5, '2023-05-01', '2022-11-05', 8, 'FOUDB01', 123456);
 
 insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB01', 10.5, 8.3, 'FOUDB01');
 insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB02', 11.5, 9.3, 'FOUDB01');
