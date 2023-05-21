@@ -295,19 +295,25 @@ begin
 end//
 delimiter ;
 
-drop trigger if exists TRG_UPDATE_STOCK;
+-- Description: Crée une nouvelle commande dès que le stock d'un disque passe en dessous de 2
+-- et qu'il n'y a pas déjà une commande en cours
+
+drop trigger if exists TRG_MAKE_ORDER;
+
 delimiter //
-create trigger TRG_UPDATE_STOCK
+create trigger TRG_MAKE_ORDER
 before update on STOCK for each row
 begin
-	declare I integer;
+	declare NbDisques integer;
 	if new.Quantite < 2 then
-		select COUNT(*) into I from CONTENU where Disque = new.Disque;
-        if I = 0 then
-			insert into COMMANDE(DateCommande, Quantite, Fournisseur) values(curdate(), 10, 'FOUDB01');
-			insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
-        end if;
-        set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
+          -- Vérifie si une commande est déjà en cours pour ce disque.
+		select COUNT(*) into NbDisques from CONTENU con join COMMANDE com ON com.IdCommande = con.Commande where con.Disque = new.Disque AND com.DateLivraison > curdate();
+          -- Si pas de commande en cours, on en crée une
+          if NbDisques = 0 then
+                    insert into COMMANDE(DateCommande, Quantite, Fournisseur) values(curdate(), 10, 'FOUDB01');
+                    insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
+          end if;
+          set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
     end if;
 end//
 delimiter ;
@@ -367,26 +373,7 @@ delimiter ;
 
 -- _________________________ Triggers supplémeantaires________________________________________________
 
---  Description : Trigger qui s'assure du fait que la quantité du stock est toujours supérieure ou égale à 2
--- pour éviter de tomber dans une répture de stock
-
--- EXtra 1
-DELIMITER //
-
-CREATE TRIGGER stock_quantity_trigger
-BEFORE UPDATE ON STOCK
-FOR EACH ROW
-BEGIN
-    IF NEW.Quantite < 2 THEN
-        SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'La quantité du stock ne peut pas être inférieure à 2 !!!!!';
-    END IF;
-END//
-
-DELIMITER ;
-
-
--- EXTRA 2
+-- EXTRA 1
 
 -- Description : Trigger avant l'insertion dans la table "ALBUM" : VérifieR si l'artiste spécifié
 --  dans l'insertion existe dans la table "ARTISTE". Si l'artiste n'existe pas, annulation l'insertion.
