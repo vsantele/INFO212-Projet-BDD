@@ -453,11 +453,10 @@ inner join ADRESSE a on p.Adresse = a.IdAdresse;
 
 drop view if exists INFO_COMMANDE;
 create view INFO_COMMANDE as
-select c.IdCommande, Magasin, m.Nom as NomMagasion, t.Disque, c.Quantite, c.DateLivraison, c.DateCommande, f.Nom as Fournisseur
+select c.IdCommande, Magasin, t.Disque, c.Quantite, c.DateLivraison, c.DateCommande, f.Nom as Fournisseur
 from CONTENU t
 inner join COMMANDE c on t.Commande = c.IdCommande
-inner join FOURNISSEUR f on c.Fournisseur = f.IdFournisseur
-join MAGASIN m on c.Magasin = m.IdMagasin;
+inner join FOURNISSEUR f on c.Fournisseur = f.IdFournisseur;
 
 
 -- Insert Section
