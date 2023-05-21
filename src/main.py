@@ -62,6 +62,10 @@ def main():
                         view_sells(num_shop)
                     elif manager_choice == utils.ComptaChoices.SHOW_ORDERS.value:
                         view_orders(num_shop)
+                    elif manager_choice == utils.ComptaChoices.SHOW_RAPPORT.value:
+                        view_annual_rapport(num_shop)
+                    elif manager_choice == utils.ComptaChoices.SHOW_MONTH_RAPPORT.value:
+                        view_monthly_rapport(num_shop)
                     utils.print_compta_menu()
                     manager_choice = utils.get_choice(
                         utils.ComptaChoices.SHOW_SELLS.value,
@@ -517,6 +521,34 @@ def view_orders(num_shop):
         ],
         orders,
     )
+
+
+def view_annual_rapport(num_shop):
+    db = Database()
+    year = utils.get_year()
+    db.cursor.execute(
+        "SELECT YEAR(DateAchat), SUM(PrixTotal) FROM FACTURE WHERE idMagasin = %s AND YEAR(DateAchat) = %s GROUP BY YEAR(DateAchat)",
+        [num_shop, year],
+    )
+    data = db.cursor.fetchall()
+    utils.print_data(["Année", "Chiffre d'affaire"], data)
+
+
+def view_monthly_rapport(num_shop):
+    db = Database()
+    year = utils.get_year()
+    db.cursor.execute(
+        "SELECT YEAR(DateAchat), MONTH(DateAchat), SUM(PrixTotal) FROM FACTURE WHERE idMagasin = %s AND YEAR(DateAchat) = %s GROUP BY YEAR(DateAchat), MONTH(DateAchat)",
+        [num_shop, year],
+    )
+    data = db.cursor.fetchall()
+    utils.print_data(["Année", "Mois", "Chiffre d'affaire"], data)
+    db.cursor.execute(
+        "SELECT YEAR(DateAchat), SUM(PrixTotal) FROM FACTURE WHERE idMagasin = %s AND YEAR(DateAchat) = %s GROUP BY YEAR(DateAchat)",
+        [num_shop, year],
+    )
+    data2 = db.cursor.fetchall()
+    utils.print_data(["Année", "Chiffre d'affaire"], data2)
 
 
 if __name__ == "__main__":

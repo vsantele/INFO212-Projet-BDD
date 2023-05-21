@@ -25,7 +25,9 @@ class ClientChoices(Enum):
 class ComptaChoices(Enum):
     SHOW_SELLS = 1
     SHOW_ORDERS = 2
-    QUIT = 3
+    SHOW_RAPPORT = 3
+    SHOW_MONTH_RAPPORT = 4
+    QUIT = 5
 
 
 COUNTRIES = [country.name for country in Countries()]
@@ -62,7 +64,9 @@ def print_compta_menu():
     print("╠══════════════════════════════════╣")
     print("║ 1 - Afficher ventes              ║")
     print("║ 2 - Afficher commandes           ║")
-    print("║ 3 - Quitter                      ║")
+    print("║ 3 - Afficher rapport annuel      ║")
+    print("║ 4 - Afficher rapport mensuel     ║")
+    print("║ 5 - Quitter                      ║")
     print("╚══════════════════════════════════╝")
 
 
@@ -203,3 +207,11 @@ def get_date():
         raise ValueError
     else:
         return date(int(date_list[0]), int(date_list[1]), int(date_list[2]))
+
+
+@retry(ValueError)
+def get_year():
+    year = int(input("Entrez une année (AAAA) : "))
+    if year < 1000 or year > 9999:
+        raise ValueError
+    return year
