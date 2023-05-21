@@ -432,12 +432,15 @@ DELIMITER ;
 
 drop view if exists FACTURE;
 create view FACTURE as
-select v.Numero, c.NumClient, p.Nom, p.Prenom, d.IdDisque, v.DateAchat, v.Quantite,
+select v.Numero, m.IdMagasin, m.Nom as NomMagasion, c.NumClient, p.Nom, p.Prenom, d.IdDisque, v.DateAchat, v.Quantite,
        (d.PrixVente * v.Quantite) AS PrixTotal
 from VENTE v
 inner join CLIENT c on v.Client = c.NumClient
 inner join DISQUE d on v.Disque = d.IdDisque
-inner join PERSONNE p on c.Personne = p.IdPersonne;
+inner join PERSONNE p on c.Personne = p.IdPersonne
+join EMPLOYE e on e.Personne = v.Employe
+join MAGASIN m on e.Magasin = m.IdMagasin;
+
 
 drop view if exists INFO_CLIENT;
 create view INFO_CLIENT as
