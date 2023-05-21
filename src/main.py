@@ -65,8 +65,8 @@ def main():
                     )
                     while vendeur_choice != utils.VendeurChoices.QUIT.value:
                         if vendeur_choice == utils.VendeurChoices.MAKE_SELL.value:
-                            view_sons()
-                            view_albums()
+                            view_sons(num_shop)
+                            view_albums(num_shop)
                             make_sale(num_vendeur)
                         elif vendeur_choice == utils.VendeurChoices.SHOW_INVOICE:
                             view_invoice(num_vendeur)
@@ -203,7 +203,7 @@ def view_shops():
         print("Magasins: ")
         utils.print_data(
             [
-                "Numéro Magasin",
+                "Numéro",
                 "Nom",
                 "Rue",
                 "Code Postal",
@@ -233,11 +233,12 @@ def view_sellers(num_shop):
         print("Erreur lors de l'affichage des vendeurs")
 
 
-def view_sons():
+def view_sons(num_shop):
     db = Database()
     try:
         db.cursor.execute(
-            "select d.IdDisque, s.Titre, s.Genre1, s.Genre2, s.Genre3, s.Genre4, s.Genre5, d.PrixVente from DISQUESINGLE ds JOIN SON s ON s.NumSon = ds.Son JOIN DISQUE d ON d.IdDisque = ds.Disque;"
+            "select d.IdDisque, s.Titre, s.Genre1, s.Genre2, s.Genre3, s.Genre4, s.Genre5, d.PrixVente from DISQUESINGLE ds JOIN SON s ON s.NumSon = ds.Son JOIN DISQUE d ON d.IdDisque = ds.Disque JOIN STOCK st on st.Disque = d.IdDisque WHERE st.Magasin = %s AND st.Quantite > 0;",
+            [num_shop],
         )
         disques = db.cursor.fetchall()
         disques = [(d[0], d[1], ", ".join(filter(None, d[-5:-1])), d[7]) for d in disques]  # type: ignore
@@ -256,11 +257,11 @@ def view_sons():
         print("Erreur lors de l'affichage des disques")
 
 
-def view_albums():
+def view_albums(num_shop):
     db = Database()
     try:
         db.cursor.execute(
-            "select d.IdDisque, a.Titre, a.Genre1, a.Genre2, a.Genre3, a.Genre4, a.Genre5, d.PrixVente from DISQUEALBUM ds JOIN ALBUM a ON a.NumAlbum = ds.Album JOIN DISQUE d ON d.IdDisque = ds.Disque;"
+            "select d.IdDisque, a.Titre, a.Genre1, a.Genre2, a.Genre3, a.Genre4, a.Genre5, d.PrixVente from DISQUEALBUM da JOIN ALBUM a ON a.NumAlbum = da.Album JOIN DISQUE d ON d.IdDisque = ds.Disque JOIN STOCK st on st.Disque = d.IdDisque WHERE st.Magasin = %s AND st.Quantite > 0;"
         )
         disques = db.cursor.fetchall()
         disques = [(d[0], d[1], ", ".join(filter(None, d[-5:-1])), d[7]) for d in disques]  # type: ignore
