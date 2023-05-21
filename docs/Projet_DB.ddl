@@ -3,9 +3,9 @@
 -- *--------------------------------------------
 -- * DB-MAIN version: 11.0.2              
 -- * Generator date: Sep 14 2021              
--- * Generation date: Sun Apr 23 18:32:11 2023 
--- * LUN file: C:\Users\yboun\OneDrive\Bureau\BD2\INFO212-Projet-BDD\docs\Projet_DB.lun 
--- * Schema: Projet DB/SQL 
+-- * Generation date: Sun May 21 21:51:03 2023 
+-- * LUN file: C:\Users\yboun\OneDrive\Bureau\leDB\INFO212-Projet-BDD\docs\Projet_DB.lun 
+-- * Schema: Projet DB/SQL1 
 -- ********************************************* 
 
 
@@ -64,6 +64,7 @@ create table Commande (
      Date_livraison char(1) not null,
      Date_Commande char(1) not null,
      Quantite -- Compound attribute -- not null,
+     IdMagasin numeric(1) not null,
      ID_Fou numeric(10) not null,
      constraint ID_Commande_ID primary key (ID_Com));
 
@@ -122,12 +123,11 @@ create table Interprete (
      constraint ID_Interprete_ID primary key (NumSon, Id));
 
 create table MAGASIN (
-     IdMagasin numeric(1),
-     Nom varchar(1),
+     IdMagasin numeric(1) not null,
+     Nom varchar(1) not null,
      Telephone numeric(1) not null,
      IdAdresse varchar(1),
-     constraint ID_MAGASIN_ID primary key (IdMagasin),
-     constraint SID_MAGASIN_ID unique (Nom));
+     constraint ID_MAGASIN_ID primary key (IdMagasin));
 
 create table PERSONNE (
      IdPersonne numeric(1) not null,
@@ -205,6 +205,10 @@ alter table Commande add constraint ID_Commande_CHK
      check(exists(select * from Contenu
                   where Contenu.ID_Com = ID_Com)); 
 
+alter table Commande add constraint REF_Comma_MAGAS_FK
+     foreign key (IdMagasin)
+     references MAGASIN;
+
 alter table Commande add constraint REF_Comma_Fourn_FK
      foreign key (ID_Fou)
      references Fournisseur;
@@ -265,9 +269,6 @@ alter table Interprete add constraint REF_Inter_ARTIS_FK
 alter table MAGASIN add constraint ID_MAGASIN_CHK
      check(exists(select * from GERANT
                   where GERANT.IdMagasin = IdMagasin)); 
-
-alter table MAGASIN add constraint LSTONE_MAGASIN
-     check(IdMagasin is not null or Nom is not null); 
 
 alter table MAGASIN add constraint REF_MAGAS_ADRES_FK
      foreign key (IdAdresse)
@@ -351,6 +352,9 @@ create unique index SID_CLIEN_PERSO_IND
 create unique index ID_Commande_IND
      on Commande (ID_Com);
 
+create index REF_Comma_MAGAS_IND
+     on Commande (IdMagasin);
+
 create index REF_Comma_Fourn_IND
      on Commande (ID_Fou);
 
@@ -401,9 +405,6 @@ create index REF_Inter_ARTIS_IND
 
 create unique index ID_MAGASIN_IND
      on MAGASIN (IdMagasin);
-
-create unique index SID_MAGASIN_IND
-     on MAGASIN (Nom);
 
 create index REF_MAGAS_ADRES_IND
      on MAGASIN (IdAdresse);
