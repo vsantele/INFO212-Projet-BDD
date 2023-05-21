@@ -116,8 +116,10 @@ create table COMMANDE (
      DateCommande date not null,
      Quantite numeric(10) not null,
      Fournisseur char(30) not null,
+     Magasin numeric(6) not null,
      constraint ID_COMMANDE_ID primary key (IdCommande),
      foreign key (Fournisseur) references FOURNISSEUR(IdFournisseur) on delete no action on update cascade,
+     foreign key (Magasin) references MAGASIN(IdMagasin) on delete no action on update cascade,
      check (Quantite >= 0),
      check (DateCommande < Datelivraison));
 
@@ -327,7 +329,7 @@ begin
 	if new.Quantite < 2 then
 		select COUNT(*) into I from CONTENU where Disque = new.Disque;
         if I = 0 then
-			insert into COMMANDE(DateCommande, Datelivraison, Quantite, Fournisseur) values(curdate(),curdate()+5, 10, 'FOUDB01');
+			insert into COMMANDE(DateCommande, Datelivraison, Quantite, Fournisseur, Magasin) values(curdate(),curdate()+5, 10, 'FOUDB01', new.Magasin);
 			insert into CONTENU values(LAST_INSERT_ID(),new.Disque);
         end if;
         set new.Disque = new.Disque, New.Magasin = New.Magasin, New.Quantite = New.Quantite;
@@ -451,7 +453,7 @@ inner join ADRESSE a on p.Adresse = a.IdAdresse;
 
 drop view if exists INFO_COMMANDE;
 create view INFO_COMMANDE as
-select c.IdCommande, t.Disque, c.Quantite, c.DateLivraison, c.DateCommande, f.Nom as Fournisseur
+select c.IdCommande, m.IdMagasin, m.Nom as NomMagasion, t.Disque, c.Quantite, c.DateLivraison, c.DateCommande, f.Nom as Fournisseur
 from CONTENU t
 inner join COMMANDE c on t.Commande = c.IdCommande
 inner join FOURNISSEUR f on c.Fournisseur = f.IdFournisseur;
@@ -514,11 +516,11 @@ insert into CLIENT values(3, 3);
 insert into FOURNISSEUR values('FOUDB01', 'Scorpion Music');
 insert into FOURNISSEUR values('FOUDB02', 'Anybody Music Group');
 
-insert into COMMANDE values(1, '2023-01-01', '2022-12-01', 2, 'FOUDB01');
-insert into COMMANDE values(2, '2023-02-01', '2022-12-02', 3, 'FOUDB01');
-insert into COMMANDE values(3, '2023-03-01', '2022-12-03', 4, 'FOUDB01');
-insert into COMMANDE values(4, '2023-04-01', '2022-11-04', 5, 'FOUDB01');
-insert into COMMANDE values(5, '2023-05-01', '2022-11-05', 8, 'FOUDB01');
+insert into COMMANDE values(1, '2023-01-01', '2022-12-01', 2, 'FOUDB01', 12346);
+insert into COMMANDE values(2, '2023-02-01', '2022-12-02', 3, 'FOUDB01', 12346);
+insert into COMMANDE values(3, '2023-03-01', '2022-12-03', 4, 'FOUDB01', 12346);
+insert into COMMANDE values(4, '2023-04-01', '2022-11-04', 5, 'FOUDB01', 12346);
+insert into COMMANDE values(5, '2023-05-01', '2022-11-05', 8, 'FOUDB01', 12346);
 
 insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB01', 10.5, 8.3, 'FOUDB01');
 insert into DISQUE(IdDisque, PrixVente, PrixAchat, Fournisseur) values('DISDB02', 11.5, 9.3, 'FOUDB01');
