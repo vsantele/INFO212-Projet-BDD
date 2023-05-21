@@ -7,10 +7,9 @@ from datetime import date
 
 class User_choices(Enum):
     ADD_CLI = 1
-    VENDEUR = 2
-    CLIENT = 3
-    COMPTA = 4
-    QUIT = 5
+    CLIENT = 2
+    COMPTA = 3
+    QUIT = 4
 
 
 class ClientChoices(Enum):
@@ -23,11 +22,10 @@ class ClientChoices(Enum):
     QUIT = 7
 
 
-class VendeurChoices(Enum):
-    MAKE_SELL = 1
-    SHOW_INVOICE = 2
-    SHOW_SELLS = 3
-    QUIT = 4
+class ComptaChoices(Enum):
+    SHOW_SELLS = 1
+    SHOW_ORDERS = 2
+    QUIT = 3
 
 
 COUNTRIES = [country.name for country in Countries()]
@@ -38,10 +36,9 @@ def print_user_menu():
     print("║        USER        ║")
     print("╠════════════════════╣")
     print("║ 1 - Ajouter client ║")
-    print("║ 2 - Vendeur        ║")
-    print("║ 3 - Client         ║")
-    print("║ 4 - Servive compta ║")
-    print("║ 5 - Quitter        ║")
+    print("║ 2 - Client         ║")
+    print("║ 3 - Servive compta ║")
+    print("║ 4 - Quitter        ║")
     print("╚════════════════════╝")
 
 
@@ -59,14 +56,13 @@ def print_client_menu():
     print("╚══════════════════════════════════╝")
 
 
-def print_vendeur_menu():
+def print_compta_menu():
     print("╔══════════════════════════════════╗")
     print("║               MENU               ║")
     print("╠══════════════════════════════════╣")
-    print("║ 1 - Effectuer une vente          ║")
-    print("║ 2 - Afficher facture             ║")
-    print("║ 3 - Afficher vos ventes          ║")
-    print("║ 4 - Quitter                      ║")
+    print("║ 1 - Afficher ventes              ║")
+    print("║ 2 - Afficher commandes           ║")
+    print("║ 3 - Quitter                      ║")
     print("╚══════════════════════════════════╝")
 
 
@@ -136,7 +132,6 @@ def get_quantite(disque):
         raise ValueError
     db.cursor.execute("select s.Quantite from STOCK s where Disque = %s;", [disque])
     quantite_db = db.cursor.fetchone()
-    print(disque, quantite_db, quantite)
     if quantite_db is None or quantite > int(quantite_db[0]):  # type: ignore
         print("Il n'y a pas assez de stock")
         raise ValueError
@@ -159,6 +154,18 @@ def get_disque_db(db):
 def get_employe_db(db):
     id_employe = int(input("Entrez l'identifiant de l'employé: "))
     db.cursor.execute("select * from EMPLOYE where Personne = %s;", [id_employe])
+    employe_db = [i for i in db.cursor]
+    if len(employe_db) == 0:
+        raise ValueError
+    else:
+        return id_employe
+
+
+@retry(ValueError)
+def get_manager_db(num_shop):
+    db = Database()
+    id_employe = int(input("Entrez l'identifiant du manager: "))
+    db.cursor.execute("select * from GERANT where Employe = %s;", [id_employe])
     employe_db = [i for i in db.cursor]
     if len(employe_db) == 0:
         raise ValueError

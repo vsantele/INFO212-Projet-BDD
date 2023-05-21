@@ -39,9 +39,7 @@ def main():
                         elif client_choice == utils.ClientChoices.DELETE_CLI.value:
                             is_deleted = delete_client(num_client)
                         elif client_choice == utils.ClientChoices.ADD_BUY.value:
-                            view_sons(num_shop)
-                            view_albums(num_shop)
-                            make_purchase(num_client)
+                            make_purchase(num_shop, num_client)
                         elif client_choice == utils.ClientChoices.SEE_INVOICE.value:
                             see_invoice(num_client)
                         else:
@@ -53,30 +51,22 @@ def main():
                                 utils.ClientChoices.QUIT.value,
                             )
             elif user_choice == utils.User_choices.COMPTA.value:
-                print("Service compta")
-            elif user_choice == utils.User_choices.VENDEUR.value:
-                view_sellers(num_shop)
-                connected, num_vendeur = connect_vendeur()
-                if connected:
-                    utils.print_vendeur_menu()
-                    vendeur_choice = utils.get_choice(
-                        utils.VendeurChoices.MAKE_SELL.value,
-                        utils.VendeurChoices.QUIT.value,
+                view_managers(num_shop)
+                num_manager = utils.get_manager_db(num_shop)
+                utils.print_compta_menu()
+                manager_choice = utils.get_choice(
+                    utils.ComptaChoices.SHOW_SELLS.value, utils.ComptaChoices.QUIT.value
+                )
+                while manager_choice != utils.ComptaChoices.QUIT.value:
+                    if manager_choice == utils.ComptaChoices.SHOW_SELLS.value:
+                        view_sells(num_shop)
+                    elif manager_choice == utils.ComptaChoices.SHOW_ORDERS.value:
+                        view_orders(num_shop)
+                    utils.print_compta_menu()
+                    manager_choice = utils.get_choice(
+                        utils.ComptaChoices.SHOW_SELLS.value,
+                        utils.ComptaChoices.QUIT.value,
                     )
-                    while vendeur_choice != utils.VendeurChoices.QUIT.value:
-                        if vendeur_choice == utils.VendeurChoices.MAKE_SELL.value:
-                            view_sons(num_shop)
-                            view_albums(num_shop)
-                            make_sale(num_shop, num_vendeur)
-                        elif vendeur_choice == utils.VendeurChoices.SHOW_INVOICE:
-                            view_invoice(num_vendeur)
-                        elif vendeur_choice == utils.VendeurChoices.SHOW_SELLS:
-                            view_sells(num_vendeur)
-                        utils.print_vendeur_menu()
-                        vendeur_choice = utils.get_choice(
-                            utils.VendeurChoices.MAKE_SELL.value,
-                            utils.VendeurChoices.QUIT.value,
-                        )
             utils.print_user_menu()
             user_choice = utils.get_choice(
                 utils.User_choices.ADD_CLI.value, utils.User_choices.QUIT.value
@@ -187,6 +177,27 @@ def view_clients():
                 "Code Postal",
             ],
             clients,
+        )
+    except Exception:
+        print("Erreur lors de l'affichage des clients")
+
+
+def view_managers(num_shop):
+    db = Database()
+    try:
+        db.cursor.execute(
+            "select g.Employe, p.Nom, p.Prenom from GERANT g JOIN PERSONNE p ON g.Employe = p.IdPersonne WHERE g.Magasin = %s;",
+            [num_shop],
+        )
+        managers = db.cursor.fetchall()
+        print("Managers: ")
+        utils.print_data(
+            [
+                "Numéro",
+                "Nom",
+                "Prénom",
+            ],
+            managers,
         )
     except Exception:
         print("Erreur lors de l'affichage des clients")
@@ -355,33 +366,18 @@ def edit_client(num_client):
         print("Modification effectuée")
 
 
-def make_purchase(num_client):
+def make_purchase(num_shop, num_client):
     db = Database()
+    view_sons(num_shop)
+    view_albums(num_shop)
     disque = utils.get_disque_db(db)
     quantite = utils.get_quantite(disque)
+    view_sellers(num_shop)
     id_employe = utils.get_employe_db(db)
     try:
         db.cursor.execute(
             "insert into VENTE(Quantite, DateAchat, Disque, Client, Employe) values(%s, curdate(), %s, %s, %s)",
             [quantite, disque, num_client, id_employe],
-        )
-        db.connection.commit()
-    except:
-        print("Erreur lors de l'achat")
-    else:
-        print("Achat effectué")
-
-
-def make_sale(num_shop, num_seller):
-    db = Database()
-    disque = utils.get_disque_db(db)
-    quantite = utils.get_quantite(disque)
-    view_clients()
-    num_client = utils.get_client_db(db)
-    try:
-        db.cursor.execute(
-            "insert into VENTE(Quantite, DateAchat, Disque, Client, Employe) values(%s, curdate(), %s, %s, %s)",
-            [quantite, disque, num_client, num_seller],
         )
         db.connection.commit()
     except:
@@ -478,20 +474,49 @@ def see_purchases(num_client):
     db = Database()
     try:
         db.cursor.execute(
-            "SELECT Numero, Quantite, DateAchat, Disque FROM VENTE WHERE Client = %s;",
+            "SELECT Quantite, DateAchat, Disque FROM VENTE WHERE Client = %s;",
             [num_client],
         )
     except:
         print("Erreur lors de l'affichage des achats.")
     else:
-        titles = ["Numéro", "Quantité", "Date d'Achat", "ID Disque"]
+        titles = ["Quantité", "Date d'Achat", "ID Disque"]
         data = []
-        for Numero, Quantite, DateAchat, IdDisque in db.cursor:
-            data.append([str(Numero), str(Quantite), str(DateAchat), str(IdDisque)])
+        for Quantite, DateAchat, IdDisque in db.cursor:
+            data.append([str(IdDisque), str(Quantite), str(DateAchat)])
         if len(data) == 0:
             print("Vous n'avez aucun achats")
         else:
             utils.print_data(titles, data)
+
+
+def view_sells(num_shop):
+    db = Database()
+    date_invoice = utils.get_date()
+    db.cursor.execute(
+        "select * from FACTURE where DateAchat = %s and IdMagasin = %s;",
+        [str(date_invoice), num_shop],
+    )
+
+
+def view_orders(num_shop):
+    db = Database()
+    db.cursor.execute(
+        "select Magasin, Disque, Quantite, DateLivraison, DateCommande, Fournisseur from INFO_COMMANDE where Magasin = %s;",
+        [num_shop],
+    )
+    orders = db.cursor.fetchall()
+    utils.print_data(
+        [
+            "Magasin",
+            "Disque",
+            "Quantité",
+            "Date Livraison",
+            "Date Commande",
+            "Fournisseur",
+        ],
+        orders,
+    )
 
 
 if __name__ == "__main__":
